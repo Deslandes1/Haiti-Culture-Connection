@@ -280,18 +280,43 @@ TEXTS = {
         "fr": "Haïti célèbre son indépendance de la France le 1er janvier. C'est une journée de fierté nationale, avec des défilés, des discours et la traditionnelle soupe joumou.",
         "es": "Haití celebra su independencia de Francia el 1 de enero. Es un día de orgullo nacional, con desfiles, discursos y la tradicional sopa joumou."
     },
-    # Media section (updated with image upload)
+    # Media section (updated with password protection)
     "media_title": {
         "en": "📺 Media Gallery",
         "fr": "📺 Galerie Médias",
         "es": "📺 Galería de Medios"
     },
     "media_subtitle": {
-        "en": "Add images, YouTube videos, or Dropbox links to share with the community",
-        "fr": "Ajoutez des images, des vidéos YouTube ou des liens Dropbox à partager avec la communauté",
-        "es": "Agrega imágenes, videos de YouTube o enlaces de Dropbox para compartir con la comunidad"
+        "en": "Share images, YouTube videos, or Dropbox links with the community.",
+        "fr": "Partagez des images, des vidéos YouTube ou des liens Dropbox avec la communauté.",
+        "es": "Comparte imágenes, videos de YouTube o enlaces de Dropbox con la comunidad."
     },
-    "media_link_label": {
+    "media_password_prompt": {
+        "en": "🔐 Enter the page owner password to add media:",
+        "fr": "🔐 Entrez le mot de passe du propriétaire de la page pour ajouter des médias :",
+        "es": "🔐 Ingrese la contraseña del propietario de la página para agregar medios:"
+    },
+    "media_password_placeholder": {
+        "en": "Enter password",
+        "fr": "Entrez le mot de passe",
+        "es": "Ingrese contraseña"
+    },
+    "media_login_button": {
+        "en": "🔑 Login",
+        "fr": "🔑 Se connecter",
+        "es": "🔑 Iniciar sesión"
+    },
+    "media_logout_button": {
+        "en": "🚪 Logout",
+        "fr": "🚪 Se déconnecter",
+        "es": "🚪 Cerrar sesión"
+    },
+    "media_wrong_password": {
+        "en": "❌ Incorrect password. Please try again.",
+        "fr": "❌ Mot de passe incorrect. Veuillez réessayer.",
+        "es": "❌ Contraseña incorrecta. Por favor, intente de nuevo."
+    },
+    "media_add_link_label": {
         "en": "Media Link (YouTube or Dropbox)",
         "fr": "Lien média (YouTube ou Dropbox)",
         "es": "Enlace de medios (YouTube o Dropbox)"
@@ -301,15 +326,30 @@ TEXTS = {
         "fr": "Légende",
         "es": "Leyenda"
     },
-    "media_add_button": {
+    "media_add_link_button": {
         "en": "➕ Add Link",
         "fr": "➕ Ajouter un lien",
         "es": "➕ Agregar enlace"
     },
+    "media_add_image_button": {
+        "en": "➕ Add Image",
+        "fr": "➕ Ajouter une image",
+        "es": "➕ Agregar imagen"
+    },
+    "media_image_upload": {
+        "en": "📸 Upload Image",
+        "fr": "📸 Télécharger une image",
+        "es": "📸 Subir imagen"
+    },
+    "media_image_caption": {
+        "en": "Image Caption",
+        "fr": "Légende de l'image",
+        "es": "Leyenda de la imagen"
+    },
     "media_empty": {
-        "en": "No media added yet. Use the forms above to add images or links.",
-        "fr": "Aucun média ajouté pour l'instant. Utilisez les formulaires ci-dessus pour ajouter des images ou des liens.",
-        "es": "No se han agregado medios aún. Use los formularios anteriores para agregar imágenes o enlaces."
+        "en": "No media added yet.",
+        "fr": "Aucun média ajouté pour l'instant.",
+        "es": "No se han agregado medios aún."
     },
     "media_remove": {
         "en": "❌ Remove",
@@ -325,21 +365,6 @@ TEXTS = {
         "en": "Dropbox Link",
         "fr": "Lien Dropbox",
         "es": "Enlace de Dropbox"
-    },
-    "media_image_upload": {
-        "en": "📸 Upload Image",
-        "fr": "📸 Télécharger une image",
-        "es": "📸 Subir imagen"
-    },
-    "media_image_caption": {
-        "en": "Image Caption",
-        "fr": "Légende de l'image",
-        "es": "Leyenda de la imagen"
-    },
-    "media_add_image": {
-        "en": "➕ Add Image",
-        "fr": "➕ Ajouter une image",
-        "es": "➕ Agregar imagen"
     }
 }
 
@@ -354,6 +379,8 @@ if 'media_items' not in st.session_state:
     st.session_state.media_items = []
 if 'logo' not in st.session_state:
     st.session_state.logo = None
+if 'media_authenticated' not in st.session_state:
+    st.session_state.media_authenticated = False
 
 # ---------- Language selection ----------
 def set_language():
@@ -794,7 +821,7 @@ elif selected == "Festivals":
         </div>
         """, unsafe_allow_html=True)
 
-# ---------- MEDIA SECTION (UPDATED) ----------
+# ---------- MEDIA SECTION (Password Protected) ----------
 elif selected == "Media":
     st.markdown(f'<h2 class="section-title">{get_text("media_title", lang)}</h2>', unsafe_allow_html=True)
     st.markdown(f"""
@@ -804,69 +831,85 @@ elif selected == "Media":
     </div>
     """, unsafe_allow_html=True)
 
-    # ---- FORM 1: Add Image ----
-    with st.container():
-        st.markdown(f"### {get_text('media_image_upload', lang)}")
-        col1, col2 = st.columns([2, 1])
+    # ---- Password Check ----
+    if not st.session_state.media_authenticated:
+        st.markdown(f"### {get_text('media_password_prompt', lang)}")
+        password_input = st.text_input("", type="password", placeholder=get_text("media_password_placeholder", lang), key="media_password")
+        col1, col2 = st.columns([1, 3])
         with col1:
-            image_file = st.file_uploader("", type=["png", "jpg", "jpeg", "gif", "webp"], key="image_upload")
-        with col2:
-            image_caption = st.text_input(get_text("media_image_caption", lang), key="image_caption")
-        if st.button(get_text("media_add_image", lang), use_container_width=True):
-            if image_file is not None:
-                # Read image bytes
-                img_bytes = image_file.read()
-                st.session_state.media_items.append({
-                    "type": "image",
-                    "data": img_bytes,
-                    "caption": image_caption.strip(),
-                    "filename": image_file.name
-                })
-                st.success("✅ Image added!")
-                st.rerun()
-            else:
-                st.warning("Please upload an image file.")
+            if st.button(get_text("media_login_button", lang), use_container_width=True):
+                if password_input == "2026":
+                    st.session_state.media_authenticated = True
+                    st.rerun()
+                else:
+                    st.error(get_text("media_wrong_password", lang))
+    else:
+        # ---- Authenticated: show upload forms ----
+        st.success("✅ You are logged in as page owner. You can add media below.")
+        if st.button(get_text("media_logout_button", lang), use_container_width=True):
+            st.session_state.media_authenticated = False
+            st.rerun()
+        st.markdown("---")
 
-    st.markdown("---")
+        # ---- FORM 1: Add Image ----
+        with st.container():
+            st.markdown(f"### {get_text('media_image_upload', lang)}")
+            col1, col2 = st.columns([2, 1])
+            with col1:
+                image_file = st.file_uploader("", type=["png", "jpg", "jpeg", "gif", "webp"], key="image_upload")
+            with col2:
+                image_caption = st.text_input(get_text("media_image_caption", lang), key="image_caption")
+            if st.button(get_text("media_add_image_button", lang), use_container_width=True):
+                if image_file is not None:
+                    img_bytes = image_file.read()
+                    st.session_state.media_items.append({
+                        "type": "image",
+                        "data": img_bytes,
+                        "caption": image_caption.strip(),
+                        "filename": image_file.name
+                    })
+                    st.success("✅ Image added!")
+                    st.rerun()
+                else:
+                    st.warning("Please upload an image file.")
 
-    # ---- FORM 2: Add Link (YouTube or Dropbox) ----
-    with st.container():
-        st.markdown(f"### 🔗 {get_text('media_link_label', lang)}")
-        col1, col2 = st.columns([2, 1])
-        with col1:
-            link = st.text_input("", key="media_link")
-        with col2:
-            caption = st.text_input(get_text("media_caption_label", lang), key="media_caption")
-        if st.button(get_text("media_add_button", lang), use_container_width=True):
-            if link.strip():
-                st.session_state.media_items.append({
-                    "type": "link",
-                    "link": link.strip(),
-                    "caption": caption.strip()
-                })
-                st.success("✅ Link added!")
-                st.rerun()
-            else:
-                st.warning("Please enter a link.")
+        st.markdown("---")
 
-    st.markdown("---")
+        # ---- FORM 2: Add Link (YouTube or Dropbox) ----
+        with st.container():
+            st.markdown(f"### 🔗 {get_text('media_add_link_label', lang)}")
+            col1, col2 = st.columns([2, 1])
+            with col1:
+                link = st.text_input("", key="media_link")
+            with col2:
+                caption = st.text_input(get_text("media_caption_label", lang), key="media_caption")
+            if st.button(get_text("media_add_link_button", lang), use_container_width=True):
+                if link.strip():
+                    st.session_state.media_items.append({
+                        "type": "link",
+                        "link": link.strip(),
+                        "caption": caption.strip()
+                    })
+                    st.success("✅ Link added!")
+                    st.rerun()
+                else:
+                    st.warning("Please enter a link.")
 
-    # ---- Display Media Items ----
+        st.markdown("---")
+
+    # ---- Display Media Items (always visible) ----
     if st.session_state.media_items:
         for idx, item in enumerate(st.session_state.media_items):
             with st.container():
                 st.markdown(f'<div class="media-item">', unsafe_allow_html=True)
                 if item["type"] == "image":
-                    # Display image with caption
                     try:
                         img = Image.open(BytesIO(item["data"]))
                         st.image(img, caption=item["caption"], use_column_width=True)
                     except Exception as e:
                         st.error(f"Error displaying image: {e}")
                 elif item["type"] == "link":
-                    # Show caption as title
                     st.markdown(f"**{item['caption'] if item['caption'] else get_text('media_youtube', lang)}**")
-                    # Detect YouTube
                     if "youtube.com" in item['link'] or "youtu.be" in item['link']:
                         vid_match = re.search(r"(?:v=|\/)([0-9A-Za-z_-]{11})(?:[&?]|$)", item['link'])
                         if vid_match:
@@ -875,15 +918,15 @@ elif selected == "Media":
                         else:
                             st.markdown(f'<a href="{item["link"]}" target="_blank">{item["link"]}</a>', unsafe_allow_html=True)
                     else:
-                        # Regular link
                         st.markdown(f'<a href="{item["link"]}" target="_blank">{item["link"]}</a>', unsafe_allow_html=True)
                 else:
                     st.warning("Unknown media type.")
                 
-                # Remove button
-                if st.button(f"{get_text('media_remove', lang)} {idx+1}", key=f"remove_{idx}"):
-                    del st.session_state.media_items[idx]
-                    st.rerun()
+                # Only show remove button if authenticated
+                if st.session_state.media_authenticated:
+                    if st.button(f"{get_text('media_remove', lang)} {idx+1}", key=f"remove_{idx}"):
+                        del st.session_state.media_items[idx]
+                        st.rerun()
                 
                 st.markdown('</div>', unsafe_allow_html=True)
                 st.markdown("---")
