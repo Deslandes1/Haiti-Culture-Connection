@@ -35,6 +35,11 @@ TEXTS = {
     "nav_language": {"en": "🗣️ Language", "fr": "🗣️ Langue", "es": "🗣️ Idioma"},
     "nav_festivals": {"en": "🎉 Festivals", "fr": "🎉 Festivals", "es": "🎉 Festivales"},
     "nav_media": {"en": "📺 Media", "fr": "📺 Médias", "es": "📺 Medios"},
+    "nav_about": {
+        "en": "🏷️ About HCC",
+        "fr": "🏷️ À propos de HCC",
+        "es": "🏷️ Acerca de HCC"
+    },
     "upload_logo": {"en": "📤 Upload Logo", "fr": "📤 Télécharger le logo", "es": "📤 Subir logo"},
     "upload_success": {"en": "✅ Logo uploaded successfully!", "fr": "✅ Logo téléchargé avec succès !", "es": "✅ ¡Logo subido con éxito!"},
     "footer_copyright": {
@@ -280,7 +285,48 @@ TEXTS = {
         "fr": "Haïti célèbre son indépendance de la France le 1er janvier. C'est une journée de fierté nationale, avec des défilés, des discours et la traditionnelle soupe joumou.",
         "es": "Haití celebra su independencia de Francia el 1 de enero. Es un día de orgullo nacional, con desfiles, discursos y la tradicional sopa joumou."
     },
-    # Media section (updated with password protection)
+    # About HCC section (NEW)
+    "about_title": {
+        "en": "🏷️ About HCC – Haiti Culture Connection",
+        "fr": "🏷️ À propos de HCC – Haiti Culture Connection",
+        "es": "🏷️ Acerca de HCC – Haiti Culture Connection"
+    },
+    "about_intro": {
+        "en": "HCC: Haiti Culture Connection. The first label in the history of HMI. A groundbreaking initiative for Haiti's productive youth. Now young Haitian talents have a recourse when it comes to financing their art projects @HCC.",
+        "fr": "HCC: Haiticultureconnection. Le premier Label 🏷 dans l'histoire de l'HMI. Une toute première initiative aussi bénéfique pour la jeunesse productive haïtienne, désormais les jeunes talents haïtiens ont un recours quand il s'agit de vouloir financer leurs projets d'Arts @HCC.",
+        "es": "HCC: Haiticultureconnection. La primera etiqueta en la historia de HMI. Una iniciativa pionera para la juventud productiva haitiana. Ahora los jóvenes talentos haitianos tienen un recurso cuando se trata de financiar sus proyectos de arte @HCC."
+    },
+    "about_mission": {
+        "en": "With a committed team dedicated to mentoring artworks, promoting our historical and cultural heritage, and marketing Haitian culture. HCC aims to establish a direct connection between all Haitian artists, linking their businesses and enterprises operating in the arts sector so they can grow together.",
+        "fr": "Avec une équipe qui s'engage pour encadrer les œuvres d'Arts, pour valoriser nos patrimoines historiques et culturels, promouvoir et vendre la culture haïtienne. HCC veut établir une connection directe entre tous les artistes haïtiens, en reliant leurs business et entreprises fonctionnant dans le domaine d'art en vue de pouvoir grandir ensemble.",
+        "es": "Con un equipo comprometido a mentorizar obras de arte, valorizar nuestro patrimonio histórico y cultural, y promover y vender la cultura haitiana. HCC busca establecer una conexión directa entre todos los artistas haitianos, conectando sus negocios y empresas que operan en el sector artístico para que puedan crecer juntos."
+    },
+    "about_connection": {
+        "en": "This direct connection will facilitate commercial exchanges within HMI and also bring artists and the public closer to each other – a connection that will guide all young talents toward their goals. HCC is the new structural heritage of Haitian culture.",
+        "fr": "Cette connection directe permettra une facilité des échanges commerciaux dans l'HMI et aussi ça rapprochera les artistes et le public l'un vers l'autre tout aussi bien une connection qui va diriger tous les jeunes talents vers leurs objectifs. HCC, le nouveau patrimoine structurel de la culture haïtienne.",
+        "es": "Esta conexión directa facilitará los intercambios comerciales dentro de HMI y también acercará a los artistas y al público entre sí – una conexión que guiará a todos los jóvenes talentos hacia sus objetivos. HCC, el nuevo patrimonio estructural de la cultura haitiana."
+    },
+    "about_quote": {
+        "en": "Culture is the most tangible proof of the existence of all civilizations.",
+        "fr": "La culture est la preuve la plus tangible de l'existence de toutes civilisations.",
+        "es": "La cultura es la prueba más tangible de la existencia de todas las civilizaciones."
+    },
+    "about_ceo": {
+        "en": "CEO: Jean Charles",
+        "fr": "PDG: Jean Charles",
+        "es": "CEO: Jean Charles"
+    },
+    "about_whatsapp": {
+        "en": "WhatsApp: +18094177808",
+        "fr": "WhatsApp: +18094177808",
+        "es": "WhatsApp: +18094177808"
+    },
+    "about_social": {
+        "en": "Follow everywhere on social media @HCC",
+        "fr": "Suivez partout sur les réseaux sociaux @HCC",
+        "es": "Sigue en todas partes en redes sociales @HCC"
+    },
+    # Media section
     "media_title": {
         "en": "📺 Media Gallery",
         "fr": "📺 Galerie Médias",
@@ -410,7 +456,8 @@ with st.sidebar:
         get_text('nav_cuisine', lang),
         get_text('nav_language', lang),
         get_text('nav_festivals', lang),
-        get_text('nav_media', lang)
+        get_text('nav_media', lang),
+        get_text('nav_about', lang)
     ]
     
     selected_display = st.radio(
@@ -428,7 +475,8 @@ with st.sidebar:
         get_text('nav_cuisine', lang): "Cuisine",
         get_text('nav_language', lang): "Language",
         get_text('nav_festivals', lang): "Festivals",
-        get_text('nav_media', lang): "Media"
+        get_text('nav_media', lang): "Media",
+        get_text('nav_about', lang): "About"
     }
     selected = nav_map[selected_display]
     
@@ -565,6 +613,17 @@ st.markdown("""
     .media-item img {
         border-radius: 8px;
         max-width: 100%;
+    }
+    .about-quote {
+        font-size: 1.3rem;
+        font-style: italic;
+        color: #004488;
+        text-align: center;
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.4);
+        border-radius: 12px;
+        border-left: 4px solid #3399ff;
+        margin: 15px 0;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -831,7 +890,6 @@ elif selected == "Media":
     </div>
     """, unsafe_allow_html=True)
 
-    # ---- Password Check ----
     if not st.session_state.media_authenticated:
         st.markdown(f"### {get_text('media_password_prompt', lang)}")
         password_input = st.text_input("", type="password", placeholder=get_text("media_password_placeholder", lang), key="media_password")
@@ -844,14 +902,12 @@ elif selected == "Media":
                 else:
                     st.error(get_text("media_wrong_password", lang))
     else:
-        # ---- Authenticated: show upload forms ----
         st.success("✅ You are logged in as page owner. You can add media below.")
         if st.button(get_text("media_logout_button", lang), use_container_width=True):
             st.session_state.media_authenticated = False
             st.rerun()
         st.markdown("---")
 
-        # ---- FORM 1: Add Image ----
         with st.container():
             st.markdown(f"### {get_text('media_image_upload', lang)}")
             col1, col2 = st.columns([2, 1])
@@ -875,7 +931,6 @@ elif selected == "Media":
 
         st.markdown("---")
 
-        # ---- FORM 2: Add Link (YouTube or Dropbox) ----
         with st.container():
             st.markdown(f"### 🔗 {get_text('media_add_link_label', lang)}")
             col1, col2 = st.columns([2, 1])
@@ -897,7 +952,6 @@ elif selected == "Media":
 
         st.markdown("---")
 
-    # ---- Display Media Items (always visible) ----
     if st.session_state.media_items:
         for idx, item in enumerate(st.session_state.media_items):
             with st.container():
@@ -922,7 +976,6 @@ elif selected == "Media":
                 else:
                     st.warning("Unknown media type.")
                 
-                # Only show remove button if authenticated
                 if st.session_state.media_authenticated:
                     if st.button(f"{get_text('media_remove', lang)} {idx+1}", key=f"remove_{idx}"):
                         del st.session_state.media_items[idx]
@@ -932,6 +985,54 @@ elif selected == "Media":
                 st.markdown("---")
     else:
         st.info(get_text("media_empty", lang))
+
+# ---------- ABOUT HCC SECTION (NEW) ----------
+elif selected == "About":
+    st.markdown(f'<h2 class="section-title">{get_text("about_title", lang)}</h2>', unsafe_allow_html=True)
+    
+    # Intro
+    st.markdown(f"""
+    <div class="culture-card">
+        <h3>🏷️ HCC – Haiti Culture Connection</h3>
+        <p>{get_text("about_intro", lang)}</p>
+        <p>{get_text("about_mission", lang)}</p>
+        <p>{get_text("about_connection", lang)}</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Quote
+    st.markdown(f"""
+    <div class="about-quote">
+        " {get_text("about_quote", lang)} "
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Contact info card
+    st.markdown(f"""
+    <div class="culture-card">
+        <h3>📱 {get_text("about_ceo", lang)}</h3>
+        <p><strong style="color:#004488;">📞 {get_text("about_whatsapp", lang)}</strong></p>
+        <p><strong style="color:#004488;">🌐 {get_text("about_social", lang)}</strong></p>
+        <p style="font-size:0.8rem; color:#555; margin-top:10px;">
+            🇭🇹 <strong>HCC</strong> – Le nouveau patrimoine structurel de la culture haïtienne.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Quick social links
+    st.markdown("""
+    <div style="text-align:center; padding:10px;">
+        <p style="font-size:1.2rem;">
+            <a href="https://wa.me/18094177808" target="_blank" style="text-decoration:none; color:#004488;">📱 WhatsApp</a>
+            &nbsp;|&nbsp;
+            <a href="https://www.instagram.com/HCC" target="_blank" style="text-decoration:none; color:#004488;">📸 Instagram</a>
+            &nbsp;|&nbsp;
+            <a href="https://www.facebook.com/HCC" target="_blank" style="text-decoration:none; color:#004488;">📘 Facebook</a>
+            &nbsp;|&nbsp;
+            <a href="https://twitter.com/HCC" target="_blank" style="text-decoration:none; color:#004488;">🐦 Twitter</a>
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
 
 # ---------- Footer ----------
 st.markdown("---")
