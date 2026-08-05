@@ -1,5 +1,6 @@
 import streamlit as st
 from PIL import Image
+import re
 
 # ---------- Page Config ----------
 st.set_page_config(
@@ -44,7 +45,11 @@ TEXTS = {
         "fr": "Célébrer la riche culture, l'histoire et le peuple d'Haïti.",
         "es": "Celebrando la rica cultura, historia y pueblo de Haití."
     },
-    "footer_hashtags": "#HaitiCulture #Haiti #Culture #History #Music #Art #Cuisine #Language #Festivals #HaitianPride #GlobalInternetpy",
+    "footer_hashtags": {
+        "en": "#HaitiCulture #Haiti #Culture #History #Music #Art #Cuisine #Language #Festivals #HaitianPride #GlobalInternetpy",
+        "fr": "#HaitiCulture #Haïti #Culture #Histoire #Musique #Art #Cuisine #Langue #Festivals #FiertéHaïtienne #GlobalInternetpy",
+        "es": "#HaitiCulture #Haití #Cultura #Historia #Música #Arte #Cocina #Idioma #Festivales #OrgulloHaitiano #GlobalInternetpy"
+    },
     # Main titles
     "main_title": {
         "en": "🇭🇹 Haiti Culture Connection",
@@ -99,9 +104,21 @@ TEXTS = {
         "fr": "Sites historiques clés :",
         "es": "Sitios históricos clave:"
     },
-    "history_site1": "• The Citadelle Laferrière – A UNESCO World Heritage Site",
-    "history_site2": "• Sans-Souci Palace – Symbol of Haitian royalty",
-    "history_site3": "• The Cathedral of Port-au-Prince – Rich architectural history",
+    "history_site1": {
+        "en": "• The Citadelle Laferrière – A UNESCO World Heritage Site",
+        "fr": "• La Citadelle Laferrière – Un site du patrimoine mondial de l'UNESCO",
+        "es": "• La Citadelle Laferrière – Patrimonio de la Humanidad de la UNESCO"
+    },
+    "history_site2": {
+        "en": "• Sans-Souci Palace – Symbol of Haitian royalty",
+        "fr": "• Palais Sans-Souci – Symbole de la royauté haïtienne",
+        "es": "• Palacio Sans-Souci – Símbolo de la realeza haitiana"
+    },
+    "history_site3": {
+        "en": "• The Cathedral of Port-au-Prince – Rich architectural history",
+        "fr": "• La Cathédrale de Port-au-Prince – Riche histoire architecturale",
+        "es": "• La Catedral de Puerto Príncipe – Rica historia arquitectónica"
+    },
     # Music
     "music_title": {"en": "🎵 Haitian Music", "fr": "🎵 Musique Haïtienne", "es": "🎵 Música Haitiana"},
     "music_intro": {
@@ -115,7 +132,11 @@ TEXTS = {
         "fr": "Le genre moderne le plus populaire en Haïti. Créé par Nemours Jean-Baptiste dans les années 1950, le Compas est un rythme doux et dansant qui mêle jazz, sons latins et caribéens.",
         "es": "El género moderno más popular en Haití. Creado por Nemours Jean-Baptiste en la década de 1950, el Compas es un ritmo suave y bailable que mezcla jazz, sonidos latinos y caribeños."
     },
-    "music_artists": {"en": "Famous Artists:", "fr": "Artistes célèbres :", "es": "Artistas famosos:"},
+    "music_artists": {
+        "en": "Famous Artists:",
+        "fr": "Artistes célèbres :",
+        "es": "Artistas famosos:"
+    },
     "music_rara": {"en": "🥁 Rara", "fr": "🥁 Rara", "es": "🥁 Rara"},
     "music_rara_desc": {
         "en": "A traditional Afro-Haitian genre performed during Carnival and Lent. Rara features bamboo trumpets (vaksen), drums, and call-and-response vocals.",
@@ -210,7 +231,11 @@ TEXTS = {
         "fr": "Le créole haïtien est la langue du peuple. Il a évolué à partir du français avec des influences des langues africaines, de l'espagnol et du taïno. Il est devenu langue officielle en 1987.",
         "es": "El criollo haitiano es el idioma del pueblo. Evolucionó del francés con influencias de lenguas africanas, español y taíno. Se convirtió en idioma oficial en 1987."
     },
-    "lang_phrases_title": {"en": "🗣️ Common Phrases in Haitian Creole", "fr": "🗣️ Phrases courantes en créole haïtien", "es": "🗣️ Frases comunes en criollo haitiano"},
+    "lang_phrases_title": {
+        "en": "🗣️ Common Phrases in Haitian Creole",
+        "fr": "🗣️ Phrases courantes en créole haïtien",
+        "es": "🗣️ Frases comunes en criollo haitiano"
+    },
     "lang_phrase1": {"en": "Mèsi - Thank you", "fr": "Mèsi - Merci", "es": "Mèsi - Gracias"},
     "lang_phrase2": {"en": "Wi - Yes", "fr": "Wi - Oui", "es": "Wi - Sí"},
     "lang_phrase3": {"en": "Non - No", "fr": "Non - Non", "es": "Non - No"},
@@ -230,7 +255,11 @@ TEXTS = {
         "fr": "Le Carnaval d'Haïti est l'un des plus vibrants des Caraïbes. Il a lieu en février ou mars et présente des costumes élaborés, de la musique, de la danse et des défilés.",
         "es": "El Carnaval de Haití es uno de los más vibrantes del Caribe. Se celebra en febrero o marzo y presenta disfraces elaborados, música, baile y desfiles."
     },
-    "fest_carnival_cities": {"en": "Key Cities:", "fr": "Villes clés :", "es": "Ciudades clave:"},
+    "fest_carnival_cities": {
+        "en": "Key Cities:",
+        "fr": "Villes clés :",
+        "es": "Ciudades clave:"
+    },
     "fest_rara": {"en": "💃 Rara Festival", "fr": "💃 Festival Rara", "es": "💃 Festival Rara"},
     "fest_rara_desc": {
         "en": "A Lenten festival that blends African and Catholic traditions. Rara processions feature bands playing bamboo trumpets and drums, with dancers and singers.",
@@ -250,15 +279,51 @@ TEXTS = {
         "es": "Haití celebra su independencia de Francia el 1 de enero. Es un día de orgullo nacional, con desfiles, discursos y la tradicional sopa joumou."
     },
     # Media section
-    "media_title": {"en": "📺 Media Gallery", "fr": "📺 Galerie Médias", "es": "📺 Galería de Medios"},
-    "media_subtitle": {"en": "Add YouTube or Dropbox links to share with the community", "fr": "Ajoutez des liens YouTube ou Dropbox à partager avec la communauté", "es": "Agrega enlaces de YouTube o Dropbox para compartir con la comunidad"},
-    "media_link_label": {"en": "Media Link (YouTube or Dropbox)", "fr": "Lien média (YouTube ou Dropbox)", "es": "Enlace de medios (YouTube o Dropbox)"},
-    "media_caption_label": {"en": "Caption", "fr": "Légende", "es": "Leyenda"},
-    "media_add_button": {"en": "➕ Add Media", "fr": "➕ Ajouter un média", "es": "➕ Agregar medio"},
-    "media_empty": {"en": "No media added yet. Use the form above to add a link.", "fr": "Aucun média ajouté pour l'instant. Utilisez le formulaire ci-dessus pour ajouter un lien.", "es": "No se han agregado medios aún. Use el formulario anterior para agregar un enlace."},
-    "media_remove": {"en": "❌ Remove", "fr": "❌ Supprimer", "es": "❌ Eliminar"},
-    "media_youtube": {"en": "YouTube Video", "fr": "Vidéo YouTube", "es": "Video de YouTube"},
-    "media_dropbox": {"en": "Dropbox Link", "fr": "Lien Dropbox", "es": "Enlace de Dropbox"},
+    "media_title": {
+        "en": "📺 Media Gallery",
+        "fr": "📺 Galerie Médias",
+        "es": "📺 Galería de Medios"
+    },
+    "media_subtitle": {
+        "en": "Add YouTube or Dropbox links to share with the community",
+        "fr": "Ajoutez des liens YouTube ou Dropbox à partager avec la communauté",
+        "es": "Agrega enlaces de YouTube o Dropbox para compartir con la comunidad"
+    },
+    "media_link_label": {
+        "en": "Media Link (YouTube or Dropbox)",
+        "fr": "Lien média (YouTube ou Dropbox)",
+        "es": "Enlace de medios (YouTube o Dropbox)"
+    },
+    "media_caption_label": {
+        "en": "Caption",
+        "fr": "Légende",
+        "es": "Leyenda"
+    },
+    "media_add_button": {
+        "en": "➕ Add Media",
+        "fr": "➕ Ajouter un média",
+        "es": "➕ Agregar medio"
+    },
+    "media_empty": {
+        "en": "No media added yet. Use the form above to add a link.",
+        "fr": "Aucun média ajouté pour l'instant. Utilisez le formulaire ci-dessus pour ajouter un lien.",
+        "es": "No se han agregado medios aún. Use el formulario anterior para agregar un enlace."
+    },
+    "media_remove": {
+        "en": "❌ Remove",
+        "fr": "❌ Supprimer",
+        "es": "❌ Eliminar"
+    },
+    "media_youtube": {
+        "en": "YouTube Video",
+        "fr": "Vidéo YouTube",
+        "es": "Video de YouTube"
+    },
+    "media_dropbox": {
+        "en": "Dropbox Link",
+        "fr": "Lien Dropbox",
+        "es": "Enlace de Dropbox"
+    }
 }
 
 # ---------- Helper function to get text ----------
@@ -336,6 +401,120 @@ with st.sidebar:
     st.markdown("---")
     st.caption("🇭🇹 Haiti Culture Connection")
     st.caption("v1.0 | Built with ❤️")
+
+# ---------- CSS (Light Blue Theme) ----------
+st.markdown("""
+    <style>
+    .stApp {
+        background: #e6f0ff !important;
+    }
+    .stSidebar,
+    .stSidebar .sidebar-content,
+    section[data-testid="stSidebar"] {
+        background: #d4e4f7 !important;
+    }
+    .stSidebar .stMarkdown,
+    .stSidebar .stCaption,
+    .stSidebar .stButton button {
+        color: #1a2b4c !important;
+    }
+    .main-title {
+        font-size: 3.5rem;
+        font-weight: 900;
+        text-align: center;
+        background: linear-gradient(135deg, #0044aa, #0066cc, #3399ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        padding: 20px 0;
+        text-shadow: 0 0 60px rgba(0, 68, 170, 0.2);
+        animation: glow 3s ease-in-out infinite;
+    }
+    @keyframes glow {
+        0%, 100% { filter: drop-shadow(0 0 20px rgba(0, 68, 170, 0.15)); }
+        50% { filter: drop-shadow(0 0 40px rgba(0, 68, 170, 0.3)); }
+    }
+    .sub-title {
+        color: #004488;
+        font-size: 1.2rem;
+        text-align: center;
+        font-weight: 600;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        margin-bottom: 30px;
+    }
+    .section-title {
+        color: #004488;
+        font-size: 2rem;
+        font-weight: 700;
+        border-bottom: 3px solid #3399ff;
+        padding-bottom: 10px;
+        margin-top: 40px;
+        margin-bottom: 20px;
+    }
+    .culture-card {
+        background: rgba(255, 255, 255, 0.6);
+        border-radius: 15px;
+        padding: 20px;
+        margin: 10px 0;
+        border: 1px solid rgba(0, 68, 170, 0.1);
+        transition: 0.3s;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+    .culture-card:hover {
+        background: rgba(255, 255, 255, 0.8);
+        border-color: #3399ff;
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 68, 170, 0.15);
+    }
+    .culture-card h3 {
+        color: #003366;
+        margin-bottom: 10px;
+    }
+    .culture-card h4 {
+        color: #004488;
+        margin-bottom: 8px;
+    }
+    .culture-card p {
+        color: #1a2b4c;
+        line-height: 1.6;
+    }
+    .footer {
+        text-align: center;
+        padding: 30px 0;
+        border-top: 1px solid rgba(0, 68, 170, 0.1);
+        margin-top: 40px;
+        color: #555;
+        font-size: 0.9rem;
+    }
+    .footer .heart {
+        color: #d21034;
+    }
+    .stButton button {
+        background: linear-gradient(135deg, #0066cc, #3399ff) !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 25px !important;
+        padding: 10px 30px !important;
+        font-weight: 600 !important;
+        transition: 0.3s !important;
+    }
+    .stButton button:hover {
+        transform: scale(1.05) !important;
+        box-shadow: 0 5px 30px rgba(0, 68, 170, 0.3) !important;
+    }
+    .stRadio label, .stRadio div {
+        color: #1a2b4c !important;
+    }
+    .stMarkdown {
+        color: #1a2b4c !important;
+    }
+    .stCaption {
+        color: #1a2b4c !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
 # ---------- Main Content ----------
 
@@ -622,7 +801,6 @@ elif selected == "Media":
                 # Detect if it's a YouTube link
                 if "youtube.com" in item['link'] or "youtu.be" in item['link']:
                     # Try to extract video ID
-                    import re
                     vid_match = re.search(r"(?:v=|\/)([0-9A-Za-z_-]{11})(?:[&?]|$)", item['link'])
                     if vid_match:
                         vid = vid_match.group(1)
