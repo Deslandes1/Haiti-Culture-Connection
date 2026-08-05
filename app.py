@@ -10,28 +10,22 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# ---------- Custom CSS with Haitian Colors ----------
+# ---------- Custom CSS ----------
 st.markdown("""
     <style>
-    /* Main background - dark blue */
     .stApp {
         background: #0a1628 !important;
     }
-    
-    /* Sidebar - matching dark blue */
     .stSidebar,
     .stSidebar .sidebar-content,
     section[data-testid="stSidebar"] {
         background: #0d1f3c !important;
     }
-    
     .stSidebar .stMarkdown,
     .stSidebar .stCaption,
     .stSidebar .stButton button {
         color: #ffffff !important;
     }
-    
-    /* Main title - Haitian colors */
     .main-title {
         font-size: 3.5rem;
         font-weight: 900;
@@ -44,12 +38,10 @@ st.markdown("""
         text-shadow: 0 0 60px rgba(0, 32, 159, 0.3);
         animation: glow 3s ease-in-out infinite;
     }
-    
     @keyframes glow {
         0%, 100% { filter: drop-shadow(0 0 20px rgba(210, 16, 52, 0.2)); }
         50% { filter: drop-shadow(0 0 40px rgba(0, 32, 159, 0.4)); }
     }
-    
     .sub-title {
         color: #ffcc00;
         font-size: 1.2rem;
@@ -59,8 +51,6 @@ st.markdown("""
         text-transform: uppercase;
         margin-bottom: 30px;
     }
-    
-    /* Section headers */
     .section-title {
         color: #ffcc00;
         font-size: 2rem;
@@ -70,15 +60,12 @@ st.markdown("""
         margin-top: 40px;
         margin-bottom: 20px;
     }
-    
     .section-subtitle {
         color: #ffffff;
         font-size: 1.2rem;
         font-weight: 500;
         margin-bottom: 10px;
     }
-    
-    /* Cards */
     .culture-card {
         background: rgba(255, 255, 255, 0.05);
         border-radius: 15px;
@@ -102,8 +89,6 @@ st.markdown("""
         color: #dddddd;
         line-height: 1.6;
     }
-    
-    /* Sidebar navigation */
     .nav-item {
         color: #ffffff !important;
         padding: 10px 15px;
@@ -118,8 +103,6 @@ st.markdown("""
         background: rgba(210, 16, 52, 0.2);
         color: #ffcc00 !important;
     }
-    
-    /* Logo container */
     .logo-container {
         text-align: center;
         padding: 20px 0;
@@ -129,8 +112,6 @@ st.markdown("""
         border-radius: 15px;
         border: 2px solid rgba(255, 255, 255, 0.1);
     }
-    
-    /* Footer */
     .footer {
         text-align: center;
         padding: 30px 0;
@@ -142,22 +123,12 @@ st.markdown("""
     .footer .heart {
         color: #d21034;
     }
-    
-    /* Video container */
     .video-container {
         border-radius: 15px;
         overflow: hidden;
         margin: 15px 0;
         border: 1px solid rgba(255, 255, 255, 0.08);
     }
-    
-    /* Image styling */
-    .stImage {
-        border-radius: 15px;
-        overflow: hidden;
-    }
-    
-    /* Text colors */
     .white-text {
         color: #ffffff !important;
     }
@@ -167,8 +138,6 @@ st.markdown("""
     .red-text {
         color: #d21034 !important;
     }
-    
-    /* Button styling */
     .stButton button {
         background: linear-gradient(135deg, #00209f, #d21034) !important;
         color: white !important;
@@ -194,11 +163,8 @@ with st.sidebar:
     """, unsafe_allow_html=True)
     
     st.markdown("---")
-    
-    # Navigation
     st.markdown("### 🌍 Explore Haiti")
     
-    # Create navigation buttons
     nav_items = [
         "🏠 Home",
         "📜 History",
@@ -217,13 +183,10 @@ with st.sidebar:
     )
     
     st.markdown("---")
-    
-    # Logo upload section
     st.markdown("### 📤 Upload Logo")
     uploaded_logo = st.file_uploader("Upload your logo", type=["png", "jpg", "jpeg", "svg"])
     
     if uploaded_logo is not None:
-        # The logo will be displayed in the main content
         st.session_state['logo'] = uploaded_logo
         st.success("✅ Logo uploaded successfully!")
     
@@ -233,12 +196,17 @@ with st.sidebar:
 
 # ---------- Main Content ----------
 
-# Display logo if uploaded
+# Display logo if uploaded – FIXED VERSION
 if 'logo' in st.session_state and st.session_state['logo'] is not None:
-    logo = Image.open(st.session_state['logo'])
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        st.image(logo, use_container_width=True)
+    try:
+        logo = Image.open(st.session_state['logo'])
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+            # Fixed: use_column_width instead of use_container_width
+            st.image(logo, use_column_width=True)
+    except Exception as e:
+        st.error(f"Error displaying logo: {e}")
+        st.info("Please upload a valid image file (PNG, JPG, JPEG, or SVG).")
 
 # Header
 st.markdown('<div class="main-title">🇭🇹 Haiti Culture Connection</div>', unsafe_allow_html=True)
@@ -247,6 +215,28 @@ st.markdown('<div class="sub-title">✨ Celebrating the Heart and Soul of Haiti 
 # ---------- Page Content ----------
 if selected == "🏠 Home":
     st.markdown('<h2 class="section-title">🏠 Welcome to Haiti Culture Connection</h2>', unsafe_allow_html=True)
+    
+    # Logo design prompt (expandable)
+    with st.expander("🎨 View Logo Design Prompt (Click to expand)", expanded=False):
+        st.markdown("""
+        <div style="background:rgba(255,255,255,0.05); padding:20px; border-radius:10px; color:#dddddd; font-size:0.95rem; line-height:1.8;">
+            <p><strong style="color:#ffcc00;">Logo Description:</strong></p>
+            <p>
+            A high-resolution, cinematic close-up of the "Haiti Culture Connection" logo from image_0.png, 
+            rendered as a polished metallic and enamel emblem. The central 3D-beveled 'HC' monogram 
+            (blue 'H' and yellow/red 'C') and the enclosing red circle are finished in high-gloss materials, 
+            catching intense, brilliant specular highlights. The green network nodes and their connecting 
+            lines are transformed into delicate, glowing fiber-optic elements. The entire green network 
+            node structure rotates slowly and smoothly around the central 'HC' monogram, with motion blur 
+            on the nodes indicating movement. Subtle light trails and bokeh particles follow the path of 
+            the rotating nodes. The text "HAITI CULTURE CONNECTION" below the emblem is sharply defined 
+            and softly underlit. The background is a clean, soft-focus gradient of deep blue to purple, 
+            with a subtle, pulsing digital grid pattern. The overall scene is bathed in a warm, brilliant, 
+            and dynamic light, making the entire logo shine brightly. The view is slightly dynamic, with 
+            depth of field.
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
     
     col1, col2 = st.columns([2, 1])
     with col1:
@@ -290,7 +280,6 @@ if selected == "🏠 Home":
 
 elif selected == "📜 History":
     st.markdown('<h2 class="section-title">📜 Haitian History</h2>', unsafe_allow_html=True)
-    
     col1, col2 = st.columns([3, 2])
     with col1:
         st.markdown("""
@@ -314,14 +303,12 @@ elif selected == "📜 History":
             </p>
         </div>
         """, unsafe_allow_html=True)
-    
     with col2:
-        st.image("https://via.placeholder.com/400x300/00209f/d21034?text=🇭🇹+Haitian+History", use_container_width=True)
+        st.image("https://via.placeholder.com/400x300/00209f/d21034?text=🇭🇹+Haitian+History", use_column_width=True)
         st.caption("📸 The Citadelle Laferrière - A symbol of Haitian freedom")
 
 elif selected == "🎵 Music":
     st.markdown('<h2 class="section-title">🎵 Haitian Music</h2>', unsafe_allow_html=True)
-    
     st.markdown("""
     <div class="culture-card">
         <h3>🎶 The Rhythm of Haiti</h3>
@@ -332,9 +319,7 @@ elif selected == "🎵 Music":
         </p>
     </div>
     """, unsafe_allow_html=True)
-    
     col1, col2 = st.columns(2)
-    
     with col1:
         st.markdown("""
         <div class="culture-card">
@@ -346,7 +331,6 @@ elif selected == "🎵 Music":
             <p><strong style="color:#ffcc00;">Famous Artists:</strong> Tabou Combo, Coupé Cloué, Jean Baptiste</p>
         </div>
         """, unsafe_allow_html=True)
-        
         st.markdown("""
         <div class="culture-card">
             <h4>🥁 Rara</h4>
@@ -356,7 +340,6 @@ elif selected == "🎵 Music":
             </p>
         </div>
         """, unsafe_allow_html=True)
-    
     with col2:
         st.markdown("""
         <div class="culture-card">
@@ -367,7 +350,6 @@ elif selected == "🎵 Music":
             </p>
         </div>
         """, unsafe_allow_html=True)
-        
         st.markdown("""
         <div class="culture-card">
             <h4>🎶 Vodou Rhythms</h4>
@@ -377,8 +359,6 @@ elif selected == "🎵 Music":
             </p>
         </div>
         """, unsafe_allow_html=True)
-    
-    # Video placeholder
     st.markdown("""
     <div class="culture-card">
         <h4>🎬 Watch: Haitian Music Documentary (Placeholder)</h4>
@@ -393,7 +373,6 @@ elif selected == "🎵 Music":
 
 elif selected == "🎨 Art":
     st.markdown('<h2 class="section-title">🎨 Haitian Art</h2>', unsafe_allow_html=True)
-    
     st.markdown("""
     <div class="culture-card">
         <h3>🎨 Vibrant Expressions of Haitian Life</h3>
@@ -403,9 +382,7 @@ elif selected == "🎨 Art":
         </p>
     </div>
     """, unsafe_allow_html=True)
-    
     col1, col2, col3 = st.columns(3)
-    
     with col1:
         st.markdown("""
         <div class="culture-card">
@@ -415,13 +392,11 @@ elif selected == "🎨 Art":
                 flat perspectives, and scenes of daily life. The Centre d'Art in Port-au-Prince 
                 is a hub for this style.
             </p>
-            <p style="font-size:0.8rem; color:#888;">Placeholder image below</p>
             <div style="background:#0d1f3c; padding:30px; text-align:center; color:#888; border-radius:10px;">
                 🎨 Image Here
             </div>
         </div>
         """, unsafe_allow_html=True)
-    
     with col2:
         st.markdown("""
         <div class="culture-card">
@@ -431,13 +406,11 @@ elif selected == "🎨 Art":
                 Haitian heroes, Vodou spirits, and everyday life. The iron market in Port-au-Prince 
                 is a great place to see this art form.
             </p>
-            <p style="font-size:0.8rem; color:#888;">Placeholder image below</p>
             <div style="background:#0d1f3c; padding:30px; text-align:center; color:#888; border-radius:10px;">
                 🗿 Image Here
             </div>
         </div>
         """, unsafe_allow_html=True)
-    
     with col3:
         st.markdown("""
         <div class="culture-card">
@@ -446,7 +419,6 @@ elif selected == "🎨 Art":
                 Ceremonial flags (drapo) made from sequins and beads are used in Vodou ceremonies. 
                 These intricate, colorful flags depict spirits and are works of art in their own right.
             </p>
-            <p style="font-size:0.8rem; color:#888;">Placeholder image below</p>
             <div style="background:#0d1f3c; padding:30px; text-align:center; color:#888; border-radius:10px;">
                 🎭 Image Here
             </div>
@@ -455,7 +427,6 @@ elif selected == "🎨 Art":
 
 elif selected == "🍲 Cuisine":
     st.markdown('<h2 class="section-title">🍲 Haitian Cuisine</h2>', unsafe_allow_html=True)
-    
     st.markdown("""
     <div class="culture-card">
         <h3>🇭🇹 A Delicious Fusion of Flavors</h3>
@@ -465,9 +436,7 @@ elif selected == "🍲 Cuisine":
         </p>
     </div>
     """, unsafe_allow_html=True)
-    
     col1, col2 = st.columns(2)
-    
     with col1:
         st.markdown("""
         <div class="culture-card">
@@ -478,7 +447,6 @@ elif selected == "🍲 Cuisine":
             </p>
         </div>
         """, unsafe_allow_html=True)
-        
         st.markdown("""
         <div class="culture-card">
             <h4>🍲 Soup Joumou</h4>
@@ -488,7 +456,6 @@ elif selected == "🍲 Cuisine":
             </p>
         </div>
         """, unsafe_allow_html=True)
-    
     with col2:
         st.markdown("""
         <div class="culture-card">
@@ -499,7 +466,6 @@ elif selected == "🍲 Cuisine":
             </p>
         </div>
         """, unsafe_allow_html=True)
-        
         st.markdown("""
         <div class="culture-card">
             <h4>🍹 Acassan</h4>
@@ -509,7 +475,6 @@ elif selected == "🍲 Cuisine":
             </p>
         </div>
         """, unsafe_allow_html=True)
-    
     st.markdown("""
     <div class="culture-card">
         <h4>🍽️ Local Dishes to Try (Placeholder Images)</h4>
@@ -529,7 +494,6 @@ elif selected == "🍲 Cuisine":
 
 elif selected == "🗣️ Language":
     st.markdown('<h2 class="section-title">🗣️ Haitian Language</h2>', unsafe_allow_html=True)
-    
     st.markdown("""
     <div class="culture-card">
         <h3>🇭🇹 A Rich Linguistic Heritage</h3>
@@ -539,9 +503,7 @@ elif selected == "🗣️ Language":
         </p>
     </div>
     """, unsafe_allow_html=True)
-    
     col1, col2 = st.columns(2)
-    
     with col1:
         st.markdown("""
         <div class="culture-card">
@@ -553,7 +515,6 @@ elif selected == "🗣️ Language":
             <p><strong style="color:#ffcc00;">Example:</strong> "Bonjour, comment allez-vous?"</p>
         </div>
         """, unsafe_allow_html=True)
-    
     with col2:
         st.markdown("""
         <div class="culture-card">
@@ -566,7 +527,6 @@ elif selected == "🗣️ Language":
             <p style="font-size:0.8rem; color:#888;">Hello, how are you?</p>
         </div>
         """, unsafe_allow_html=True)
-    
     st.markdown("""
     <div class="culture-card">
         <h4>🗣️ Common Phrases in Haitian Creole</h4>
@@ -583,7 +543,6 @@ elif selected == "🗣️ Language":
 
 elif selected == "🎉 Festivals":
     st.markdown('<h2 class="section-title">🎉 Haitian Festivals</h2>', unsafe_allow_html=True)
-    
     st.markdown("""
     <div class="culture-card">
         <h3>🎊 Celebrations of Faith, Culture, and Community</h3>
@@ -593,9 +552,7 @@ elif selected == "🎉 Festivals":
         </p>
     </div>
     """, unsafe_allow_html=True)
-    
     col1, col2 = st.columns(2)
-    
     with col1:
         st.markdown("""
         <div class="culture-card">
@@ -607,7 +564,6 @@ elif selected == "🎉 Festivals":
             <p><strong style="color:#ffcc00;">Key Cities:</strong> Port-au-Prince, Jacmel</p>
         </div>
         """, unsafe_allow_html=True)
-        
         st.markdown("""
         <div class="culture-card">
             <h4>💃 Rara Festival</h4>
@@ -617,7 +573,6 @@ elif selected == "🎉 Festivals":
             </p>
         </div>
         """, unsafe_allow_html=True)
-    
     with col2:
         st.markdown("""
         <div class="culture-card">
@@ -629,7 +584,6 @@ elif selected == "🎉 Festivals":
             </p>
         </div>
         """, unsafe_allow_html=True)
-        
         st.markdown("""
         <div class="culture-card">
             <h4>🗽 Independence Day (January 1)</h4>
@@ -639,7 +593,6 @@ elif selected == "🎉 Festivals":
             </p>
         </div>
         """, unsafe_allow_html=True)
-    
     st.markdown("""
     <div class="culture-card">
         <h4>🎬 Festival Videos (Placeholder)</h4>
