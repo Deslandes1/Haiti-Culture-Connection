@@ -40,8 +40,6 @@ TEXTS = {
         "fr": "🏷️ À propos de HCC",
         "es": "🏷️ Acerca de HCC"
     },
-    "upload_logo": {"en": "📤 Upload Logo", "fr": "📤 Télécharger le logo", "es": "📤 Subir logo"},
-    "upload_success": {"en": "✅ Logo uploaded successfully!", "fr": "✅ Logo téléchargé avec succès !", "es": "✅ ¡Logo subido con éxito!"},
     "footer_copyright": {
         "en": "© 2026 Haiti Culture Connection | Built with ❤️ in Haiti",
         "fr": "© 2026 Haiti Culture Connection | Construit avec ❤️ en Haïti",
@@ -285,7 +283,7 @@ TEXTS = {
         "fr": "Haïti célèbre son indépendance de la France le 1er janvier. C'est une journée de fierté nationale, avec des défilés, des discours et la traditionnelle soupe joumou.",
         "es": "Haití celebra su independencia de Francia el 1 de enero. Es un día de orgullo nacional, con desfiles, discursos y la tradicional sopa joumou."
     },
-    # About HCC section (NEW)
+    # About HCC section
     "about_title": {
         "en": "🏷️ About HCC – Haiti Culture Connection",
         "fr": "🏷️ À propos de HCC – Haiti Culture Connection",
@@ -411,6 +409,27 @@ TEXTS = {
         "en": "Dropbox Link",
         "fr": "Lien Dropbox",
         "es": "Enlace de Dropbox"
+    },
+    # Logo upload (owner only)
+    "logo_upload_title": {
+        "en": "🖼️ Upload Site Logo",
+        "fr": "🖼️ Télécharger le logo du site",
+        "es": "🖼️ Subir logo del sitio"
+    },
+    "logo_upload_subtitle": {
+        "en": "Replace the logo at the top of every page (PNG, JPG, JPEG, SVG).",
+        "fr": "Remplacez le logo en haut de chaque page (PNG, JPG, JPEG, SVG).",
+        "es": "Reemplace el logo en la parte superior de cada página (PNG, JPG, JPEG, SVG)."
+    },
+    "logo_upload_button": {
+        "en": "📤 Upload Logo",
+        "fr": "📤 Télécharger le logo",
+        "es": "📤 Subir logo"
+    },
+    "logo_upload_success": {
+        "en": "✅ Logo updated successfully!",
+        "fr": "✅ Logo mis à jour avec succès !",
+        "es": "✅ ¡Logo actualizado con éxito!"
     }
 }
 
@@ -481,14 +500,7 @@ with st.sidebar:
     selected = nav_map[selected_display]
     
     st.markdown("---")
-    st.markdown(f"### {get_text('upload_logo', lang)}")
-    uploaded_logo = st.file_uploader("", type=["png", "jpg", "jpeg", "svg"])
-    
-    if uploaded_logo is not None:
-        st.session_state.logo = uploaded_logo
-        st.success(get_text('upload_success', lang))
-    
-    st.markdown("---")
+    # Removed the logo uploader – it's now in the owner space (Media section)
     st.caption("🇭🇹 Haiti Culture Connection")
     st.caption("v1.0 | Built with ❤️")
 
@@ -908,6 +920,17 @@ elif selected == "Media":
             st.rerun()
         st.markdown("---")
 
+        # ---- Owner Space: Logo Upload ----
+        st.markdown(f"### {get_text('logo_upload_title', lang)}")
+        st.markdown(f"<p style='font-size:0.9rem; color:#1a2b4c;'>{get_text('logo_upload_subtitle', lang)}</p>", unsafe_allow_html=True)
+        logo_file = st.file_uploader("", type=["png", "jpg", "jpeg", "svg"], key="logo_uploader")
+        if logo_file is not None:
+            st.session_state.logo = logo_file
+            st.success(get_text('logo_upload_success', lang))
+            st.rerun()
+        st.markdown("---")
+
+        # ---- Image Upload ----
         with st.container():
             st.markdown(f"### {get_text('media_image_upload', lang)}")
             col1, col2 = st.columns([2, 1])
@@ -931,6 +954,7 @@ elif selected == "Media":
 
         st.markdown("---")
 
+        # ---- Link Upload ----
         with st.container():
             st.markdown(f"### 🔗 {get_text('media_add_link_label', lang)}")
             col1, col2 = st.columns([2, 1])
@@ -952,6 +976,7 @@ elif selected == "Media":
 
         st.markdown("---")
 
+    # ---- Display Media Items (always visible) ----
     if st.session_state.media_items:
         for idx, item in enumerate(st.session_state.media_items):
             with st.container():
@@ -986,11 +1011,10 @@ elif selected == "Media":
     else:
         st.info(get_text("media_empty", lang))
 
-# ---------- ABOUT HCC SECTION (NEW) ----------
+# ---------- ABOUT HCC SECTION ----------
 elif selected == "About":
     st.markdown(f'<h2 class="section-title">{get_text("about_title", lang)}</h2>', unsafe_allow_html=True)
     
-    # Intro
     st.markdown(f"""
     <div class="culture-card">
         <h3>🏷️ HCC – Haiti Culture Connection</h3>
@@ -1000,14 +1024,12 @@ elif selected == "About":
     </div>
     """, unsafe_allow_html=True)
     
-    # Quote
     st.markdown(f"""
     <div class="about-quote">
         " {get_text("about_quote", lang)} "
     </div>
     """, unsafe_allow_html=True)
     
-    # Contact info card
     st.markdown(f"""
     <div class="culture-card">
         <h3>📱 {get_text("about_ceo", lang)}</h3>
@@ -1019,7 +1041,6 @@ elif selected == "About":
     </div>
     """, unsafe_allow_html=True)
     
-    # Quick social links
     st.markdown("""
     <div style="text-align:center; padding:10px;">
         <p style="font-size:1.2rem;">
