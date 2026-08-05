@@ -326,39 +326,9 @@ TEXTS = {
         "es": "📺 Galería de Medios"
     },
     "media_subtitle": {
-        "en": "Share images, YouTube videos, or Dropbox links with the community.",
-        "fr": "Partagez des images, des vidéos YouTube ou des liens Dropbox avec la communauté.",
-        "es": "Comparte imágenes, videos de YouTube o enlaces de Dropbox con la comunidad."
-    },
-    "media_add_link_label": {
-        "en": "Media Link (YouTube or Dropbox)",
-        "fr": "Lien média (YouTube ou Dropbox)",
-        "es": "Enlace de medios (YouTube o Dropbox)"
-    },
-    "media_caption_label": {
-        "en": "Caption",
-        "fr": "Légende",
-        "es": "Leyenda"
-    },
-    "media_add_link_button": {
-        "en": "➕ Add Link",
-        "fr": "➕ Ajouter un lien",
-        "es": "➕ Agregar enlace"
-    },
-    "media_add_image_button": {
-        "en": "➕ Add Image",
-        "fr": "➕ Ajouter une image",
-        "es": "➕ Agregar imagen"
-    },
-    "media_image_upload": {
-        "en": "📸 Upload Image",
-        "fr": "📸 Télécharger une image",
-        "es": "📸 Subir imagen"
-    },
-    "media_image_caption": {
-        "en": "Image Caption",
-        "fr": "Légende de l'image",
-        "es": "Leyenda de la imagen"
+        "en": "View images, videos, and links shared by the community.",
+        "fr": "Voir les images, vidéos et liens partagés par la communauté.",
+        "es": "Ver imágenes, videos y enlaces compartidos por la comunidad."
     },
     "media_empty": {
         "en": "No media added yet.",
@@ -427,6 +397,36 @@ TEXTS = {
         "en": "✅ You are logged in as the page owner.",
         "fr": "✅ Vous êtes connecté en tant que propriétaire de la page.",
         "es": "✅ Ha iniciado sesión como propietario de la página."
+    },
+    "media_add_image": {
+        "en": "📸 Upload Image",
+        "fr": "📸 Télécharger une image",
+        "es": "📸 Subir imagen"
+    },
+    "media_image_caption": {
+        "en": "Image Caption",
+        "fr": "Légende de l'image",
+        "es": "Leyenda de la imagen"
+    },
+    "media_add_link": {
+        "en": "🔗 Add Media Link (YouTube, Dropbox, etc.)",
+        "fr": "🔗 Ajouter un lien média (YouTube, Dropbox, etc.)",
+        "es": "🔗 Agregar enlace de medios (YouTube, Dropbox, etc.)"
+    },
+    "media_link_caption": {
+        "en": "Caption",
+        "fr": "Légende",
+        "es": "Leyenda"
+    },
+    "media_add_image_button": {
+        "en": "➕ Add Image",
+        "fr": "➕ Ajouter une image",
+        "es": "➕ Agregar imagen"
+    },
+    "media_add_link_button": {
+        "en": "➕ Add Link",
+        "fr": "➕ Ajouter un lien",
+        "es": "➕ Agregar enlace"
     }
 }
 
@@ -779,6 +779,8 @@ with st.expander("🔐 Owner Space – Login to manage logo and media", expanded
             st.session_state.media_authenticated = False
             st.rerun()
         st.markdown("---")
+
+        # ---- Logo Upload ----
         st.markdown(f"### {get_text('logo_upload_title', lang)}")
         st.markdown(f"<p style='font-size:0.9rem; color:#1a2b4c;'>{get_text('logo_upload_subtitle', lang)}</p>", unsafe_allow_html=True)
         logo_file = st.file_uploader("", type=["png", "jpg", "jpeg", "svg"], key="logo_uploader_top")
@@ -786,6 +788,50 @@ with st.expander("🔐 Owner Space – Login to manage logo and media", expanded
             st.session_state.logo = logo_file
             st.success(get_text('logo_upload_success', lang))
             st.rerun()
+
+        st.markdown("---")
+
+        # ---- Image Upload ----
+        st.markdown(f"### {get_text('media_add_image', lang)}")
+        col1, col2 = st.columns([2, 1])
+        with col1:
+            image_file = st.file_uploader("", type=["png", "jpg", "jpeg", "gif", "webp"], key="image_upload_owner")
+        with col2:
+            image_caption = st.text_input(get_text('media_image_caption', lang), key="image_caption_owner")
+        if st.button(get_text('media_add_image_button', lang), key="add_image_owner", use_container_width=True):
+            if image_file is not None:
+                img_bytes = image_file.read()
+                st.session_state.media_items.append({
+                    "type": "image",
+                    "data": img_bytes,
+                    "caption": image_caption.strip(),
+                    "filename": image_file.name
+                })
+                st.success("✅ Image added!")
+                st.rerun()
+            else:
+                st.warning("Please upload an image file.")
+
+        st.markdown("---")
+
+        # ---- Link Upload ----
+        st.markdown(f"### {get_text('media_add_link', lang)}")
+        col1, col2 = st.columns([2, 1])
+        with col1:
+            link = st.text_input("", key="media_link_owner")
+        with col2:
+            caption = st.text_input(get_text('media_link_caption', lang), key="media_caption_owner")
+        if st.button(get_text('media_add_link_button', lang), key="add_link_owner", use_container_width=True):
+            if link.strip():
+                st.session_state.media_items.append({
+                    "type": "link",
+                    "link": link.strip(),
+                    "caption": caption.strip()
+                })
+                st.success("✅ Link added!")
+                st.rerun()
+            else:
+                st.warning("Please enter a link.")
 
 # ---------- Main Content: Dashboard ----------
 st.markdown(f'<h1 style="text-align:center; color:#004488; font-size:2.5rem; margin-top:0;">{get_text("dashboard_title", lang)}</h1>', unsafe_allow_html=True)
@@ -1047,7 +1093,7 @@ with col2:
     """, unsafe_allow_html=True)
 
 # ================================
-# SECTION 8: MEDIA
+# SECTION 8: MEDIA (Gallery only)
 # ================================
 st.markdown(f'<h2 class="section-title">{get_text("media_title", lang)}</h2>', unsafe_allow_html=True)
 st.markdown(f"""
@@ -1057,58 +1103,7 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# Show upload forms only if authenticated
-if st.session_state.media_authenticated:
-    st.success("🔓 You are logged in – you can add media.")
-    # Image upload
-    with st.container():
-        st.markdown(f"### {get_text('media_image_upload', lang)}")
-        col1, col2 = st.columns([2, 1])
-        with col1:
-            image_file = st.file_uploader("", type=["png", "jpg", "jpeg", "gif", "webp"], key="image_upload_dash")
-        with col2:
-            image_caption = st.text_input(get_text("media_image_caption", lang), key="image_caption_dash")
-        if st.button(get_text("media_add_image_button", lang), key="add_image_button", use_container_width=True):
-            if image_file is not None:
-                img_bytes = image_file.read()
-                st.session_state.media_items.append({
-                    "type": "image",
-                    "data": img_bytes,
-                    "caption": image_caption.strip(),
-                    "filename": image_file.name
-                })
-                st.success("✅ Image added!")
-                st.rerun()
-            else:
-                st.warning("Please upload an image file.")
-    
-    st.markdown("---")
-    
-    # Link upload
-    with st.container():
-        st.markdown(f"### 🔗 {get_text('media_add_link_label', lang)}")
-        col1, col2 = st.columns([2, 1])
-        with col1:
-            link = st.text_input("", key="media_link_dash")
-        with col2:
-            caption = st.text_input(get_text("media_caption_label", lang), key="media_caption_dash")
-        if st.button(get_text("media_add_link_button", lang), key="add_link_button", use_container_width=True):
-            if link.strip():
-                st.session_state.media_items.append({
-                    "type": "link",
-                    "link": link.strip(),
-                    "caption": caption.strip()
-                })
-                st.success("✅ Link added!")
-                st.rerun()
-            else:
-                st.warning("Please enter a link.")
-else:
-    st.info("🔐 Please log in as the page owner (at the top of this page) to add media.")
-
-st.markdown("---")
-
-# Display media items
+# Display media items (gallery)
 if st.session_state.media_items:
     for idx, item in enumerate(st.session_state.media_items):
         with st.container():
@@ -1133,6 +1128,7 @@ if st.session_state.media_items:
             else:
                 st.warning("Unknown media type.")
             
+            # Show remove button only if logged in
             if st.session_state.media_authenticated:
                 if st.button(f"{get_text('media_remove', lang)} {idx+1}", key=f"remove_{idx}_dash"):
                     del st.session_state.media_items[idx]
