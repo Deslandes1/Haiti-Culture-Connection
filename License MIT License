@@ -1,0 +1,62 @@
+
+---
+
+## 🚀 Deployment Steps
+
+1. **Create a GitHub repository** called `haiti-culture-connection`.
+2. **Add the files** above to the repository.
+3. **Push to GitHub**.
+4. **Deploy on Streamlit Cloud**:
+   - Go to [share.streamlit.io](https://share.streamlit.io)
+   - Click "New app"
+   - Select your repository
+   - Set main file to `app.py`
+   - Click "Deploy"
+
+---
+
+## 📸 How to Add Your Logo
+
+1. After deploying, click the **"Upload Logo"** button in the sidebar.
+2. Select your logo file (PNG, JPG, or SVG).
+3. The logo will appear at the top of the page.
+
+---
+
+## 📸 How to Add Images and Videos
+
+1. Create an `assets/` folder in your repository.
+2. Add your images with these names:
+   - `logo.png`
+   - `history.jpg`
+   - `music.jpg`
+   - `art.jpg`
+   - `cuisine.jpg`
+   - `language.jpg`
+   - `festivals.jpg`
+3. Replace the placeholder URLs in `app.py` with `assets/your-image.jpg`.
+
+For videos, replace the YouTube placeholder with actual embed codes.
+
+---
+
+## ✅ Features Summary
+
+| Feature | Status |
+| :--- | :--- |
+| Haitian theme (blue, red, gold) | ✅ |
+| Logo upload | ✅ |
+| History section | ✅ |
+| Music section | ✅ |
+| Art section | ✅ |
+| Cuisine section | ✅ |
+| Language section | ✅ |
+| Festivals section | ✅ |
+| Image placeholders | ✅ |
+| Video placeholders | ✅ |
+| Mobile responsive | ✅ |
+| Footer with contact info | ✅ |
+
+---
+
+Let me know if you want me to add more sections, change the design, or add specific content about any aspect of Haitian culture!
