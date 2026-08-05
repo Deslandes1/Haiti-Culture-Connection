@@ -61,6 +61,12 @@ TEXTS = {
         "fr": "✨ Célébrer le cœur et l'âme d'Haïti ✨",
         "es": "✨ Celebrando el corazón y el alma de Haití ✨"
     },
+    # Welcome banner (new)
+    "welcome_banner": {
+        "en": "Welcome to Haiti Culture Connection",
+        "fr": "Bienvenue à Haiti Culture Connection",
+        "es": "Bienvenido a Haiti Culture Connection"
+    },
     # Home page
     "home_title": {
         "en": "🏠 Welcome to Haiti Culture Connection",
@@ -733,6 +739,16 @@ st.markdown("""
         margin: 10px 0 20px 0;
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
     }
+    .welcome-banner {
+        text-align: center;
+        color: #004488;
+        font-size: 2.2rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        margin-top: 10px;
+        margin-bottom: 5px;
+        letter-spacing: 2px;
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -860,7 +876,10 @@ if st.session_state.show_owner_panel:
                     st.warning("Please enter a link.")
         st.markdown('</div>', unsafe_allow_html=True)
 
-# ---------- Main Content: Dashboard ----------
+# ---------- Main Content: Welcome Banner ----------
+st.markdown(f'<div class="welcome-banner">🏠 {get_text("welcome_banner", lang)}</div>', unsafe_allow_html=True)
+
+# ---------- Dashboard ----------
 st.markdown(f'<h1 style="text-align:center; color:#004488; font-size:2.5rem; margin-top:0;">{get_text("dashboard_title", lang)}</h1>', unsafe_allow_html=True)
 st.markdown(f'<p class="dashboard-intro">✨ {get_text("sub_title", lang)} ✨</p>', unsafe_allow_html=True)
 
