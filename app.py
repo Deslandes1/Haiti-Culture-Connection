@@ -9,7 +9,7 @@ st.set_page_config(
     page_title="Haiti Culture Connection",
     page_icon="🇭🇹",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
 # ---------- Language Dictionary ----------
@@ -21,12 +21,7 @@ LANGUAGES = {
 
 # Translation dictionary for all UI text
 TEXTS = {
-    # Sidebar
-    "nav_title": {
-        "en": "🌍 Explore Haiti",
-        "fr": "🌍 Explorez Haïti",
-        "es": "🌍 Explora Haití"
-    },
+    # Navigation (Dashboard sections)
     "nav_home": {"en": "🏠 Home", "fr": "🏠 Accueil", "es": "🏠 Inicio"},
     "nav_history": {"en": "📜 History", "fr": "📜 Histoire", "es": "📜 Historia"},
     "nav_music": {"en": "🎵 Music", "fr": "🎵 Musique", "es": "🎵 Música"},
@@ -430,6 +425,12 @@ TEXTS = {
         "en": "✅ Logo updated successfully!",
         "fr": "✅ Logo mis à jour avec succès !",
         "es": "✅ ¡Logo actualizado con éxito!"
+    },
+    # Dashboard title
+    "dashboard_title": {
+        "en": "📊 Dashboard",
+        "fr": "📊 Tableau de bord",
+        "es": "📊 Panel de control"
     }
 }
 
@@ -451,100 +452,203 @@ if 'media_authenticated' not in st.session_state:
 def set_language():
     st.session_state.lang = LANGUAGES[st.session_state.lang_selector]
 
-# ---------- Sidebar ----------
+# ---------- Sidebar (owner space only) ----------
 with st.sidebar:
-    lang_choice = st.selectbox(
-        "🌐 Language / Langue / Idioma",
-        ["English", "Français", "Español"],
-        index=["English", "Français", "Español"].index(
-            [k for k, v in LANGUAGES.items() if v == st.session_state.lang][0]
-        ),
-        key="lang_selector",
-        on_change=set_language
-    )
+    st.markdown("### 🔐 Owner Space")
     
-    lang = st.session_state.lang
-    
-    st.markdown(f"### {get_text('nav_title', lang)}")
-    
-    nav_items = [
-        get_text('nav_home', lang),
-        get_text('nav_history', lang),
-        get_text('nav_music', lang),
-        get_text('nav_art', lang),
-        get_text('nav_cuisine', lang),
-        get_text('nav_language', lang),
-        get_text('nav_festivals', lang),
-        get_text('nav_media', lang),
-        get_text('nav_about', lang)
-    ]
-    
-    selected_display = st.radio(
-        "Navigate",
-        nav_items,
-        index=0,
-        label_visibility="collapsed"
-    )
-    
-    nav_map = {
-        get_text('nav_home', lang): "Home",
-        get_text('nav_history', lang): "History",
-        get_text('nav_music', lang): "Music",
-        get_text('nav_art', lang): "Art",
-        get_text('nav_cuisine', lang): "Cuisine",
-        get_text('nav_language', lang): "Language",
-        get_text('nav_festivals', lang): "Festivals",
-        get_text('nav_media', lang): "Media",
-        get_text('nav_about', lang): "About"
-    }
-    selected = nav_map[selected_display]
+    if not st.session_state.media_authenticated:
+        password_input = st.text_input("Enter password", type="password", placeholder="Password", key="owner_password")
+        if st.button("🔑 Login", use_container_width=True):
+            if password_input == "2026":
+                st.session_state.media_authenticated = True
+                st.rerun()
+            else:
+                st.error("❌ Incorrect password.")
+    else:
+        st.success("✅ Logged in as owner")
+        if st.button("🚪 Logout", use_container_width=True):
+            st.session_state.media_authenticated = False
+            st.rerun()
+        
+        st.markdown("---")
+        st.markdown(f"### {get_text('logo_upload_title', st.session_state.lang)}")
+        logo_file = st.file_uploader("", type=["png", "jpg", "jpeg", "svg"], key="logo_uploader_sidebar")
+        if logo_file is not None:
+            st.session_state.logo = logo_file
+            st.success(get_text('logo_upload_success', st.session_state.lang))
+            st.rerun()
     
     st.markdown("---")
-    # Removed the logo uploader – it's now in the owner space (Media section)
     st.caption("🇭🇹 Haiti Culture Connection")
-    st.caption("v1.0 | Built with ❤️")
+    st.caption("v2.0 | Dashboard Edition")
 
-# ---------- CSS (Light Blue Theme) ----------
+# ---------- CSS (Light Blue Theme + Animated Logo) ----------
 st.markdown("""
     <style>
+    /* Main background */
     .stApp {
         background: #e6f0ff !important;
     }
-    .stSidebar,
-    .stSidebar .sidebar-content,
-    section[data-testid="stSidebar"] {
-        background: #d4e4f7 !important;
+    
+    /* Top bar with language selector */
+    .top-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 20px;
+        background: #d4e4f7;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        border: 1px solid rgba(0, 68, 170, 0.1);
     }
-    .stSidebar .stMarkdown,
-    .stSidebar .stCaption,
-    .stSidebar .stButton button {
-        color: #1a2b4c !important;
+    .top-bar .logo-area {
+        display: flex;
+        align-items: center;
+        gap: 15px;
     }
-    .main-title {
+    .top-bar .lang-area {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .top-bar .lang-area select {
+        padding: 6px 12px;
+        border-radius: 8px;
+        border: 1px solid rgba(0, 68, 170, 0.2);
+        background: white;
+        color: #1a2b4c;
+        font-size: 0.9rem;
+    }
+    
+    /* Animated Logo Container */
+    .logo-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 10px 0;
+    }
+    .logo-emblem {
+        position: relative;
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 30% 30%, #0044aa, #001a4a);
+        border: 4px solid #d21034;
+        box-shadow: 0 0 40px rgba(210, 16, 52, 0.3), 0 0 80px rgba(0, 68, 170, 0.2), inset 0 0 30px rgba(255, 215, 0, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: pulseGlow 3s ease-in-out infinite;
+        overflow: visible;
+    }
+    @keyframes pulseGlow {
+        0%, 100% { box-shadow: 0 0 40px rgba(210, 16, 52, 0.3), 0 0 80px rgba(0, 68, 170, 0.2); }
+        50% { box-shadow: 0 0 60px rgba(210, 16, 52, 0.5), 0 0 120px rgba(0, 68, 170, 0.3), 0 0 200px rgba(255, 215, 0, 0.1); }
+    }
+    .logo-emblem .hc-text {
         font-size: 3.5rem;
         font-weight: 900;
-        text-align: center;
-        background: linear-gradient(135deg, #0044aa, #0066cc, #3399ff);
+        letter-spacing: -4px;
+        background: linear-gradient(135deg, #0044aa, #3399ff, #ffcc00, #d21034);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
-        padding: 20px 0;
-        text-shadow: 0 0 60px rgba(0, 68, 170, 0.2);
-        animation: glow 3s ease-in-out infinite;
+        text-shadow: 0 0 30px rgba(0, 68, 170, 0.3);
+        font-family: 'Inter', sans-serif;
+        transform: rotate(-2deg);
+        filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.2));
     }
-    @keyframes glow {
-        0%, 100% { filter: drop-shadow(0 0 20px rgba(0, 68, 170, 0.15)); }
-        50% { filter: drop-shadow(0 0 40px rgba(0, 68, 170, 0.3)); }
+    /* Rotating network nodes */
+    .nodes-container {
+        position: absolute;
+        top: -20px;
+        left: -20px;
+        width: calc(100% + 40px);
+        height: calc(100% + 40px);
+        pointer-events: none;
+        animation: rotateNodes 8s linear infinite;
     }
-    .sub-title {
+    @keyframes rotateNodes {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    .node {
+        position: absolute;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #00ff88;
+        box-shadow: 0 0 15px #00ff88, 0 0 30px #00ff88;
+        animation: nodePulse 1.5s ease-in-out infinite alternate;
+    }
+    .node:nth-child(1) { top: 0%; left: 50%; animation-delay: 0s; }
+    .node:nth-child(2) { top: 25%; left: 95%; animation-delay: 0.2s; }
+    .node:nth-child(3) { top: 75%; left: 95%; animation-delay: 0.4s; }
+    .node:nth-child(4) { top: 100%; left: 50%; animation-delay: 0.6s; }
+    .node:nth-child(5) { top: 75%; left: 5%; animation-delay: 0.8s; }
+    .node:nth-child(6) { top: 25%; left: 5%; animation-delay: 1s; }
+    .node:nth-child(7) { top: 50%; left: 100%; animation-delay: 0.3s; }
+    .node:nth-child(8) { top: 50%; left: 0%; animation-delay: 0.7s; }
+    @keyframes nodePulse {
+        0% { opacity: 0.4; transform: scale(0.8); }
+        100% { opacity: 1; transform: scale(1.3); }
+    }
+    /* Connecting lines (circular ring with glow) */
+    .ring-line {
+        position: absolute;
+        top: -10px;
+        left: -10px;
+        width: calc(100% + 20px);
+        height: calc(100% + 20px);
+        border-radius: 50%;
+        border: 1px solid rgba(0, 255, 136, 0.15);
+        box-shadow: 0 0 20px rgba(0, 255, 136, 0.05);
+        animation: ringPulse 4s ease-in-out infinite;
+    }
+    .ring-line:nth-child(2) {
+        top: 0px;
+        left: 0px;
+        width: 100%;
+        height: 100%;
+        border-color: rgba(0, 255, 136, 0.08);
+        animation-delay: 2s;
+    }
+    @keyframes ringPulse {
+        0%, 100% { opacity: 0.3; }
+        50% { opacity: 0.8; }
+    }
+    /* Light trails (bokeh particles) */
+    .bokeh {
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255, 215, 0, 0.15);
+        filter: blur(8px);
+        animation: bokehFloat 6s ease-in-out infinite alternate;
+    }
+    .bokeh:nth-child(1) { width: 30px; height: 30px; top: 10%; left: 10%; }
+    .bokeh:nth-child(2) { width: 20px; height: 20px; bottom: 15%; right: 15%; animation-delay: 2s; }
+    .bokeh:nth-child(3) { width: 40px; height: 40px; top: 40%; left: 80%; animation-delay: 4s; }
+    @keyframes bokehFloat {
+        0% { transform: translate(0, 0) scale(1); opacity: 0.3; }
+        100% { transform: translate(10px, -20px) scale(1.2); opacity: 0.6; }
+    }
+    /* Logo text below */
+    .logo-text {
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 2px;
         color: #004488;
-        font-size: 1.2rem;
+        margin-top: 8px;
         text-align: center;
-        font-weight: 600;
-        letter-spacing: 4px;
-        text-transform: uppercase;
-        margin-bottom: 30px;
+        text-shadow: 0 0 20px rgba(0, 68, 170, 0.1);
+        background: linear-gradient(90deg, #0044aa, #d21034);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
     }
+    
+    /* Section headers */
     .section-title {
         color: #004488;
         font-size: 2rem;
@@ -606,14 +710,16 @@ st.markdown("""
         transform: scale(1.05) !important;
         box-shadow: 0 5px 30px rgba(0, 68, 170, 0.3) !important;
     }
-    .stRadio label, .stRadio div {
-        color: #1a2b4c !important;
-    }
-    .stMarkdown {
-        color: #1a2b4c !important;
-    }
-    .stCaption {
-        color: #1a2b4c !important;
+    .about-quote {
+        font-size: 1.3rem;
+        font-style: italic;
+        color: #004488;
+        text-align: center;
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.4);
+        border-radius: 12px;
+        border-left: 4px solid #3399ff;
+        margin: 15px 0;
     }
     .media-item {
         background: rgba(255, 255, 255, 0.7);
@@ -626,434 +732,476 @@ st.markdown("""
         border-radius: 8px;
         max-width: 100%;
     }
-    .about-quote {
-        font-size: 1.3rem;
-        font-style: italic;
-        color: #004488;
+    .dashboard-intro {
+        font-size: 1.1rem;
+        color: #1a2b4c;
         text-align: center;
-        padding: 20px;
-        background: rgba(255, 255, 255, 0.4);
-        border-radius: 12px;
-        border-left: 4px solid #3399ff;
-        margin: 15px 0;
+        padding: 10px 0 20px 0;
+        opacity: 0.8;
     }
     </style>
 """, unsafe_allow_html=True)
 
-# ---------- Main Content ----------
+# ---------- Top Bar: Language Selector + Animated Logo ----------
+lang = st.session_state.lang
 
-# Display logo if uploaded
-if st.session_state.logo is not None:
-    try:
-        logo = Image.open(st.session_state.logo)
-        col1, col2, col3 = st.columns([1, 2, 1])
-        with col2:
-            st.image(logo, use_column_width=True)
-    except Exception as e:
-        st.error(f"Error displaying logo: {e}")
-
-# Header
-st.markdown(f'<div class="main-title">{get_text("main_title", lang)}</div>', unsafe_allow_html=True)
-st.markdown(f'<div class="sub-title">{get_text("sub_title", lang)}</div>', unsafe_allow_html=True)
-
-# ---------- Page Content ----------
-if selected == "Home":
-    st.markdown(f'<h2 class="section-title">{get_text("home_title", lang)}</h2>', unsafe_allow_html=True)
-    
-    col1, col2 = st.columns([2, 1])
-    with col1:
-        st.markdown(f"""
-        <div class="culture-card">
-            <h3>🇭🇹 {get_text("home_title", lang)}</h3>
-            <p>{get_text("home_intro", lang)}</p>
-            <p>
-                <strong style="color:#004488;">{get_text("home_explore", lang)}</strong><br>
-                📜 {get_text("nav_history", lang)} – {get_text("history_intro", lang).split('.')[0]}<br>
-                🎵 {get_text("nav_music", lang)} – {get_text("music_intro", lang).split('.')[0]}<br>
-                🎨 {get_text("nav_art", lang)} – {get_text("art_intro", lang).split('.')[0]}<br>
-                🍲 {get_text("nav_cuisine", lang)} – {get_text("cuisine_intro", lang).split('.')[0]}<br>
-                🗣️ {get_text("nav_language", lang)} – {get_text("lang_intro", lang).split('.')[0]}<br>
-                🎉 {get_text("nav_festivals", lang)} – {get_text("fest_intro", lang).split('.')[0]}
-            </p>
+# Top bar with language selector on the right
+col1, col2, col3 = st.columns([1, 2, 1])
+with col1:
+    # Animated Logo (CSS-based)
+    st.markdown("""
+    <div class="logo-container">
+        <div class="logo-emblem">
+            <div class="ring-line"></div>
+            <div class="ring-line"></div>
+            <div class="nodes-container">
+                <div class="node"></div>
+                <div class="node"></div>
+                <div class="node"></div>
+                <div class="node"></div>
+                <div class="node"></div>
+                <div class="node"></div>
+                <div class="node"></div>
+                <div class="node"></div>
+            </div>
+            <div class="bokeh"></div>
+            <div class="bokeh"></div>
+            <div class="bokeh"></div>
+            <span class="hc-text">HC</span>
         </div>
-        """, unsafe_allow_html=True)
-    
-    with col2:
-        st.markdown(f"""
-        <div class="culture-card" style="text-align:center;">
-            <h3>{get_text("home_facts", lang)}</h3>
-            <p style="font-size:0.95rem;">
-                <strong style="color:#004488;">{get_text("home_capital", lang)}</strong> Port-au-Prince<br>
-                <strong style="color:#004488;">{get_text("home_population", lang)}</strong> 11.4 million<br>
-                <strong style="color:#004488;">{get_text("home_languages", lang)}</strong> French, Haitian Creole<br>
-                <strong style="color:#004488;">{get_text("home_currency", lang)}</strong> Gourde (HTG)<br>
-                <strong style="color:#004488;">{get_text("home_independence", lang)}</strong> January 1, 1804
-            </p>
-            <p style="font-size:1.5rem; margin-top:10px;">
-                🇭🇹❤️💙
-            </p>
-        </div>
-        """, unsafe_allow_html=True)
+        <div class="logo-text">HAITI CULTURE CONNECTION</div>
+    </div>
+    """, unsafe_allow_html=True)
 
-elif selected == "History":
-    st.markdown(f'<h2 class="section-title">{get_text("history_title", lang)}</h2>', unsafe_allow_html=True)
+with col3:
+    # Language selector aligned to the right
+    st.markdown('<div style="display:flex; justify-content:flex-end; padding-top:10px;">', unsafe_allow_html=True)
+    lang_choice = st.selectbox(
+        "🌐 Language",
+        ["English", "Français", "Español"],
+        index=["English", "Français", "Español"].index(
+            [k for k, v in LANGUAGES.items() if v == st.session_state.lang][0]
+        ),
+        key="lang_selector_top",
+        on_change=set_language,
+        label_visibility="collapsed"
+    )
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# ---------- Main Content: Dashboard ----------
+st.markdown(f'<h1 style="text-align:center; color:#004488; font-size:2.5rem; margin-top:0;">{get_text("dashboard_title", lang)}</h1>', unsafe_allow_html=True)
+st.markdown(f'<p class="dashboard-intro">✨ {get_text("sub_title", lang)} ✨</p>', unsafe_allow_html=True)
+
+# ================================
+# SECTION 1: HOME
+# ================================
+st.markdown(f'<h2 class="section-title">{get_text("home_title", lang)}</h2>', unsafe_allow_html=True)
+
+col1, col2 = st.columns([2, 1])
+with col1:
     st.markdown(f"""
     <div class="culture-card">
-        <h3>🇭🇹 {get_text("history_title", lang)}</h3>
-        <p>{get_text("history_intro", lang)}</p>
-        <p>{get_text("history_more", lang)}</p>
+        <h3>🇭🇹 {get_text("home_title", lang)}</h3>
+        <p>{get_text("home_intro", lang)}</p>
         <p>
-            <strong style="color:#004488;">{get_text("history_sites", lang)}</strong><br>
-            {get_text("history_site1", lang)}<br>
-            {get_text("history_site2", lang)}<br>
-            {get_text("history_site3", lang)}
+            <strong style="color:#004488;">{get_text("home_explore", lang)}</strong><br>
+            📜 {get_text("nav_history", lang)} – {get_text("history_intro", lang).split('.')[0]}<br>
+            🎵 {get_text("nav_music", lang)} – {get_text("music_intro", lang).split('.')[0]}<br>
+            🎨 {get_text("nav_art", lang)} – {get_text("art_intro", lang).split('.')[0]}<br>
+            🍲 {get_text("nav_cuisine", lang)} – {get_text("cuisine_intro", lang).split('.')[0]}<br>
+            🗣️ {get_text("nav_language", lang)} – {get_text("lang_intro", lang).split('.')[0]}<br>
+            🎉 {get_text("nav_festivals", lang)} – {get_text("fest_intro", lang).split('.')[0]}
         </p>
     </div>
     """, unsafe_allow_html=True)
 
-elif selected == "Music":
-    st.markdown(f'<h2 class="section-title">{get_text("music_title", lang)}</h2>', unsafe_allow_html=True)
+with col2:
     st.markdown(f"""
-    <div class="culture-card">
-        <h3>🎶 {get_text("music_title", lang)}</h3>
-        <p>{get_text("music_intro", lang)}</p>
+    <div class="culture-card" style="text-align:center;">
+        <h3>{get_text("home_facts", lang)}</h3>
+        <p style="font-size:0.95rem;">
+            <strong style="color:#004488;">{get_text("home_capital", lang)}</strong> Port-au-Prince<br>
+            <strong style="color:#004488;">{get_text("home_population", lang)}</strong> 11.4 million<br>
+            <strong style="color:#004488;">{get_text("home_languages", lang)}</strong> French, Haitian Creole<br>
+            <strong style="color:#004488;">{get_text("home_currency", lang)}</strong> Gourde (HTG)<br>
+            <strong style="color:#004488;">{get_text("home_independence", lang)}</strong> January 1, 1804
+        </p>
+        <p style="font-size:1.5rem; margin-top:10px;">
+            🇭🇹❤️💙
+        </p>
     </div>
     """, unsafe_allow_html=True)
-    col1, col2 = st.columns(2)
+
+# ================================
+# SECTION 2: HISTORY
+# ================================
+st.markdown(f'<h2 class="section-title">{get_text("history_title", lang)}</h2>', unsafe_allow_html=True)
+st.markdown(f"""
+<div class="culture-card">
+    <h3>🇭🇹 {get_text("history_title", lang)}</h3>
+    <p>{get_text("history_intro", lang)}</p>
+    <p>{get_text("history_more", lang)}</p>
+    <p>
+        <strong style="color:#004488;">{get_text("history_sites", lang)}</strong><br>
+        {get_text("history_site1", lang)}<br>
+        {get_text("history_site2", lang)}<br>
+        {get_text("history_site3", lang)}
+    </p>
+</div>
+""", unsafe_allow_html=True)
+
+# ================================
+# SECTION 3: MUSIC
+# ================================
+st.markdown(f'<h2 class="section-title">{get_text("music_title", lang)}</h2>', unsafe_allow_html=True)
+st.markdown(f"""
+<div class="culture-card">
+    <h3>🎶 {get_text("music_title", lang)}</h3>
+    <p>{get_text("music_intro", lang)}</p>
+</div>
+""", unsafe_allow_html=True)
+
+col1, col2 = st.columns(2)
+with col1:
+    st.markdown(f"""
+    <div class="culture-card">
+        <h4>{get_text("music_compas", lang)}</h4>
+        <p>{get_text("music_compas_desc", lang)}</p>
+        <p><strong style="color:#004488;">{get_text("music_artists", lang)}</strong> Tabou Combo, Coupé Cloué, Jean Baptiste</p>
+    </div>
+    """, unsafe_allow_html=True)
+    st.markdown(f"""
+    <div class="culture-card">
+        <h4>{get_text("music_rara", lang)}</h4>
+        <p>{get_text("music_rara_desc", lang)}</p>
+    </div>
+    """, unsafe_allow_html=True)
+with col2:
+    st.markdown(f"""
+    <div class="culture-card">
+        <h4>{get_text("music_meringue", lang)}</h4>
+        <p>{get_text("music_meringue_desc", lang)}</p>
+    </div>
+    """, unsafe_allow_html=True)
+    st.markdown(f"""
+    <div class="culture-card">
+        <h4>{get_text("music_vodou", lang)}</h4>
+        <p>{get_text("music_vodou_desc", lang)}</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+# ================================
+# SECTION 4: ART
+# ================================
+st.markdown(f'<h2 class="section-title">{get_text("art_title", lang)}</h2>', unsafe_allow_html=True)
+st.markdown(f"""
+<div class="culture-card">
+    <h3>🎨 {get_text("art_title", lang)}</h3>
+    <p>{get_text("art_intro", lang)}</p>
+</div>
+""", unsafe_allow_html=True)
+
+col1, col2, col3 = st.columns(3)
+with col1:
+    st.markdown(f"""
+    <div class="culture-card">
+        <h4>{get_text("art_naive", lang)}</h4>
+        <p>{get_text("art_naive_desc", lang)}</p>
+    </div>
+    """, unsafe_allow_html=True)
+with col2:
+    st.markdown(f"""
+    <div class="culture-card">
+        <h4>{get_text("art_sculpture", lang)}</h4>
+        <p>{get_text("art_sculpture_desc", lang)}</p>
+    </div>
+    """, unsafe_allow_html=True)
+with col3:
+    st.markdown(f"""
+    <div class="culture-card">
+        <h4>{get_text("art_vodou_flags", lang)}</h4>
+        <p>{get_text("art_vodou_flags_desc", lang)}</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+# ================================
+# SECTION 5: CUISINE
+# ================================
+st.markdown(f'<h2 class="section-title">{get_text("cuisine_title", lang)}</h2>', unsafe_allow_html=True)
+st.markdown(f"""
+<div class="culture-card">
+    <h3>🇭🇹 {get_text("cuisine_title", lang)}</h3>
+    <p>{get_text("cuisine_intro", lang)}</p>
+</div>
+""", unsafe_allow_html=True)
+
+col1, col2 = st.columns(2)
+with col1:
+    st.markdown(f"""
+    <div class="culture-card">
+        <h4>{get_text("cuisine_griot", lang)}</h4>
+        <p>{get_text("cuisine_griot_desc", lang)}</p>
+    </div>
+    """, unsafe_allow_html=True)
+    st.markdown(f"""
+    <div class="culture-card">
+        <h4>{get_text("cuisine_soup", lang)}</h4>
+        <p>{get_text("cuisine_soup_desc", lang)}</p>
+    </div>
+    """, unsafe_allow_html=True)
+with col2:
+    st.markdown(f"""
+    <div class="culture-card">
+        <h4>{get_text("cuisine_poulet", lang)}</h4>
+        <p>{get_text("cuisine_poulet_desc", lang)}</p>
+    </div>
+    """, unsafe_allow_html=True)
+    st.markdown(f"""
+    <div class="culture-card">
+        <h4>{get_text("cuisine_acassan", lang)}</h4>
+        <p>{get_text("cuisine_acassan_desc", lang)}</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+# ================================
+# SECTION 6: LANGUAGE
+# ================================
+st.markdown(f'<h2 class="section-title">{get_text("lang_title", lang)}</h2>', unsafe_allow_html=True)
+st.markdown(f"""
+<div class="culture-card">
+    <h3>🇭🇹 {get_text("lang_title", lang)}</h3>
+    <p>{get_text("lang_intro", lang)}</p>
+</div>
+""", unsafe_allow_html=True)
+
+col1, col2 = st.columns(2)
+with col1:
+    st.markdown(f"""
+    <div class="culture-card">
+        <h4>{get_text("lang_french", lang)}</h4>
+        <p>{get_text("lang_french_desc", lang)}</p>
+        <p><strong style="color:#004488;">{get_text("lang_french_example", lang)}</strong> "Bonjour, comment allez-vous?"</p>
+    </div>
+    """, unsafe_allow_html=True)
+with col2:
+    st.markdown(f"""
+    <div class="culture-card">
+        <h4>{get_text("lang_creole", lang)}</h4>
+        <p>{get_text("lang_creole_desc", lang)}</p>
+        <p><strong style="color:#004488;">{get_text("lang_french_example", lang)}</strong> "Bonjou, kijan ou ye?"</p>
+        <p style="font-size:0.8rem; color:#555;">{get_text("lang_french_example", lang).replace("Example:", "").strip()}: Hello, how are you?</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+st.markdown(f"""
+<div class="culture-card">
+    <h4>{get_text("lang_phrases_title", lang)}</h4>
+    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; color:#1a2b4c;">
+        <div><strong style="color:#004488;">{get_text("lang_phrase1", lang)}</strong></div>
+        <div><strong style="color:#004488;">{get_text("lang_phrase2", lang)}</strong></div>
+        <div><strong style="color:#004488;">{get_text("lang_phrase3", lang)}</strong></div>
+        <div><strong style="color:#004488;">{get_text("lang_phrase4", lang)}</strong></div>
+        <div><strong style="color:#004488;">{get_text("lang_phrase5", lang)}</strong></div>
+        <div><strong style="color:#004488;">{get_text("lang_phrase6", lang)}</strong></div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+# ================================
+# SECTION 7: FESTIVALS
+# ================================
+st.markdown(f'<h2 class="section-title">{get_text("fest_title", lang)}</h2>', unsafe_allow_html=True)
+st.markdown(f"""
+<div class="culture-card">
+    <h3>🎊 {get_text("fest_title", lang)}</h3>
+    <p>{get_text("fest_intro", lang)}</p>
+</div>
+""", unsafe_allow_html=True)
+
+col1, col2 = st.columns(2)
+with col1:
+    st.markdown(f"""
+    <div class="culture-card">
+        <h4>{get_text("fest_carnival", lang)}</h4>
+        <p>{get_text("fest_carnival_desc", lang)}</p>
+        <p><strong style="color:#004488;">{get_text("fest_carnival_cities", lang)}</strong> Port-au-Prince, Jacmel</p>
+    </div>
+    """, unsafe_allow_html=True)
+    st.markdown(f"""
+    <div class="culture-card">
+        <h4>{get_text("fest_rara", lang)}</h4>
+        <p>{get_text("fest_rara_desc", lang)}</p>
+    </div>
+    """, unsafe_allow_html=True)
+with col2:
+    st.markdown(f"""
+    <div class="culture-card">
+        <h4>{get_text("fest_christmas", lang)}</h4>
+        <p>{get_text("fest_christmas_desc", lang)}</p>
+    </div>
+    """, unsafe_allow_html=True)
+    st.markdown(f"""
+    <div class="culture-card">
+        <h4>{get_text("fest_independence", lang)}</h4>
+        <p>{get_text("fest_independence_desc", lang)}</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+# ================================
+# SECTION 8: MEDIA
+# ================================
+st.markdown(f'<h2 class="section-title">{get_text("media_title", lang)}</h2>', unsafe_allow_html=True)
+st.markdown(f"""
+<div class="culture-card">
+    <h3>📺 {get_text("media_title", lang)}</h3>
+    <p>{get_text("media_subtitle", lang)}</p>
+</div>
+""", unsafe_allow_html=True)
+
+# Media: Password protected add forms
+if not st.session_state.media_authenticated:
+    st.markdown(f"### {get_text('media_password_prompt', lang)}")
+    password_input = st.text_input("", type="password", placeholder=get_text("media_password_placeholder", lang), key="media_password_dash")
+    col1, col2 = st.columns([1, 3])
     with col1:
-        st.markdown(f"""
-        <div class="culture-card">
-            <h4>{get_text("music_compas", lang)}</h4>
-            <p>{get_text("music_compas_desc", lang)}</p>
-            <p><strong style="color:#004488;">{get_text("music_artists", lang)}</strong> Tabou Combo, Coupé Cloué, Jean Baptiste</p>
-        </div>
-        """, unsafe_allow_html=True)
-        st.markdown(f"""
-        <div class="culture-card">
-            <h4>{get_text("music_rara", lang)}</h4>
-            <p>{get_text("music_rara_desc", lang)}</p>
-        </div>
-        """, unsafe_allow_html=True)
-    with col2:
-        st.markdown(f"""
-        <div class="culture-card">
-            <h4>{get_text("music_meringue", lang)}</h4>
-            <p>{get_text("music_meringue_desc", lang)}</p>
-        </div>
-        """, unsafe_allow_html=True)
-        st.markdown(f"""
-        <div class="culture-card">
-            <h4>{get_text("music_vodou", lang)}</h4>
-            <p>{get_text("music_vodou_desc", lang)}</p>
-        </div>
-        """, unsafe_allow_html=True)
-
-elif selected == "Art":
-    st.markdown(f'<h2 class="section-title">{get_text("art_title", lang)}</h2>', unsafe_allow_html=True)
-    st.markdown(f"""
-    <div class="culture-card">
-        <h3>🎨 {get_text("art_title", lang)}</h3>
-        <p>{get_text("art_intro", lang)}</p>
-    </div>
-    """, unsafe_allow_html=True)
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.markdown(f"""
-        <div class="culture-card">
-            <h4>{get_text("art_naive", lang)}</h4>
-            <p>{get_text("art_naive_desc", lang)}</p>
-        </div>
-        """, unsafe_allow_html=True)
-    with col2:
-        st.markdown(f"""
-        <div class="culture-card">
-            <h4>{get_text("art_sculpture", lang)}</h4>
-            <p>{get_text("art_sculpture_desc", lang)}</p>
-        </div>
-        """, unsafe_allow_html=True)
-    with col3:
-        st.markdown(f"""
-        <div class="culture-card">
-            <h4>{get_text("art_vodou_flags", lang)}</h4>
-            <p>{get_text("art_vodou_flags_desc", lang)}</p>
-        </div>
-        """, unsafe_allow_html=True)
-
-elif selected == "Cuisine":
-    st.markdown(f'<h2 class="section-title">{get_text("cuisine_title", lang)}</h2>', unsafe_allow_html=True)
-    st.markdown(f"""
-    <div class="culture-card">
-        <h3>🇭🇹 {get_text("cuisine_title", lang)}</h3>
-        <p>{get_text("cuisine_intro", lang)}</p>
-    </div>
-    """, unsafe_allow_html=True)
-    col1, col2 = st.columns(2)
-    with col1:
-        st.markdown(f"""
-        <div class="culture-card">
-            <h4>{get_text("cuisine_griot", lang)}</h4>
-            <p>{get_text("cuisine_griot_desc", lang)}</p>
-        </div>
-        """, unsafe_allow_html=True)
-        st.markdown(f"""
-        <div class="culture-card">
-            <h4>{get_text("cuisine_soup", lang)}</h4>
-            <p>{get_text("cuisine_soup_desc", lang)}</p>
-        </div>
-        """, unsafe_allow_html=True)
-    with col2:
-        st.markdown(f"""
-        <div class="culture-card">
-            <h4>{get_text("cuisine_poulet", lang)}</h4>
-            <p>{get_text("cuisine_poulet_desc", lang)}</p>
-        </div>
-        """, unsafe_allow_html=True)
-        st.markdown(f"""
-        <div class="culture-card">
-            <h4>{get_text("cuisine_acassan", lang)}</h4>
-            <p>{get_text("cuisine_acassan_desc", lang)}</p>
-        </div>
-        """, unsafe_allow_html=True)
-
-elif selected == "Language":
-    st.markdown(f'<h2 class="section-title">{get_text("lang_title", lang)}</h2>', unsafe_allow_html=True)
-    st.markdown(f"""
-    <div class="culture-card">
-        <h3>🇭🇹 {get_text("lang_title", lang)}</h3>
-        <p>{get_text("lang_intro", lang)}</p>
-    </div>
-    """, unsafe_allow_html=True)
-    col1, col2 = st.columns(2)
-    with col1:
-        st.markdown(f"""
-        <div class="culture-card">
-            <h4>{get_text("lang_french", lang)}</h4>
-            <p>{get_text("lang_french_desc", lang)}</p>
-            <p><strong style="color:#004488;">{get_text("lang_french_example", lang)}</strong> "Bonjour, comment allez-vous?"</p>
-        </div>
-        """, unsafe_allow_html=True)
-    with col2:
-        st.markdown(f"""
-        <div class="culture-card">
-            <h4>{get_text("lang_creole", lang)}</h4>
-            <p>{get_text("lang_creole_desc", lang)}</p>
-            <p><strong style="color:#004488;">{get_text("lang_french_example", lang)}</strong> "Bonjou, kijan ou ye?"</p>
-            <p style="font-size:0.8rem; color:#555;">{get_text("lang_french_example", lang).replace("Example:", "").strip()}: Hello, how are you?</p>
-        </div>
-        """, unsafe_allow_html=True)
-    st.markdown(f"""
-    <div class="culture-card">
-        <h4>{get_text("lang_phrases_title", lang)}</h4>
-        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; color:#1a2b4c;">
-            <div><strong style="color:#004488;">{get_text("lang_phrase1", lang)}</strong></div>
-            <div><strong style="color:#004488;">{get_text("lang_phrase2", lang)}</strong></div>
-            <div><strong style="color:#004488;">{get_text("lang_phrase3", lang)}</strong></div>
-            <div><strong style="color:#004488;">{get_text("lang_phrase4", lang)}</strong></div>
-            <div><strong style="color:#004488;">{get_text("lang_phrase5", lang)}</strong></div>
-            <div><strong style="color:#004488;">{get_text("lang_phrase6", lang)}</strong></div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-elif selected == "Festivals":
-    st.markdown(f'<h2 class="section-title">{get_text("fest_title", lang)}</h2>', unsafe_allow_html=True)
-    st.markdown(f"""
-    <div class="culture-card">
-        <h3>🎊 {get_text("fest_title", lang)}</h3>
-        <p>{get_text("fest_intro", lang)}</p>
-    </div>
-    """, unsafe_allow_html=True)
-    col1, col2 = st.columns(2)
-    with col1:
-        st.markdown(f"""
-        <div class="culture-card">
-            <h4>{get_text("fest_carnival", lang)}</h4>
-            <p>{get_text("fest_carnival_desc", lang)}</p>
-            <p><strong style="color:#004488;">{get_text("fest_carnival_cities", lang)}</strong> Port-au-Prince, Jacmel</p>
-        </div>
-        """, unsafe_allow_html=True)
-        st.markdown(f"""
-        <div class="culture-card">
-            <h4>{get_text("fest_rara", lang)}</h4>
-            <p>{get_text("fest_rara_desc", lang)}</p>
-        </div>
-        """, unsafe_allow_html=True)
-    with col2:
-        st.markdown(f"""
-        <div class="culture-card">
-            <h4>{get_text("fest_christmas", lang)}</h4>
-            <p>{get_text("fest_christmas_desc", lang)}</p>
-        </div>
-        """, unsafe_allow_html=True)
-        st.markdown(f"""
-        <div class="culture-card">
-            <h4>{get_text("fest_independence", lang)}</h4>
-            <p>{get_text("fest_independence_desc", lang)}</p>
-        </div>
-        """, unsafe_allow_html=True)
-
-# ---------- MEDIA SECTION (Password Protected) ----------
-elif selected == "Media":
-    st.markdown(f'<h2 class="section-title">{get_text("media_title", lang)}</h2>', unsafe_allow_html=True)
-    st.markdown(f"""
-    <div class="culture-card">
-        <h3>📺 {get_text("media_title", lang)}</h3>
-        <p>{get_text("media_subtitle", lang)}</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-    if not st.session_state.media_authenticated:
-        st.markdown(f"### {get_text('media_password_prompt', lang)}")
-        password_input = st.text_input("", type="password", placeholder=get_text("media_password_placeholder", lang), key="media_password")
-        col1, col2 = st.columns([1, 3])
+        if st.button(get_text("media_login_button", lang), use_container_width=True):
+            if password_input == "2026":
+                st.session_state.media_authenticated = True
+                st.rerun()
+            else:
+                st.error(get_text("media_wrong_password", lang))
+else:
+    st.success("✅ Logged in as owner – you can add media below.")
+    if st.button(get_text("media_logout_button", lang), use_container_width=True):
+        st.session_state.media_authenticated = False
+        st.rerun()
+    st.markdown("---")
+    
+    # Image upload
+    with st.container():
+        st.markdown(f"### {get_text('media_image_upload', lang)}")
+        col1, col2 = st.columns([2, 1])
         with col1:
-            if st.button(get_text("media_login_button", lang), use_container_width=True):
-                if password_input == "2026":
-                    st.session_state.media_authenticated = True
-                    st.rerun()
-                else:
-                    st.error(get_text("media_wrong_password", lang))
-    else:
-        st.success("✅ You are logged in as page owner. You can add media below.")
-        if st.button(get_text("media_logout_button", lang), use_container_width=True):
-            st.session_state.media_authenticated = False
-            st.rerun()
-        st.markdown("---")
+            image_file = st.file_uploader("", type=["png", "jpg", "jpeg", "gif", "webp"], key="image_upload_dash")
+        with col2:
+            image_caption = st.text_input(get_text("media_image_caption", lang), key="image_caption_dash")
+        if st.button(get_text("media_add_image_button", lang), use_container_width=True):
+            if image_file is not None:
+                img_bytes = image_file.read()
+                st.session_state.media_items.append({
+                    "type": "image",
+                    "data": img_bytes,
+                    "caption": image_caption.strip(),
+                    "filename": image_file.name
+                })
+                st.success("✅ Image added!")
+                st.rerun()
+            else:
+                st.warning("Please upload an image file.")
+    
+    st.markdown("---")
+    
+    # Link upload
+    with st.container():
+        st.markdown(f"### 🔗 {get_text('media_add_link_label', lang)}")
+        col1, col2 = st.columns([2, 1])
+        with col1:
+            link = st.text_input("", key="media_link_dash")
+        with col2:
+            caption = st.text_input(get_text("media_caption_label", lang), key="media_caption_dash")
+        if st.button(get_text("media_add_link_button", lang), use_container_width=True):
+            if link.strip():
+                st.session_state.media_items.append({
+                    "type": "link",
+                    "link": link.strip(),
+                    "caption": caption.strip()
+                })
+                st.success("✅ Link added!")
+                st.rerun()
+            else:
+                st.warning("Please enter a link.")
+    
+    st.markdown("---")
 
-        # ---- Owner Space: Logo Upload ----
-        st.markdown(f"### {get_text('logo_upload_title', lang)}")
-        st.markdown(f"<p style='font-size:0.9rem; color:#1a2b4c;'>{get_text('logo_upload_subtitle', lang)}</p>", unsafe_allow_html=True)
-        logo_file = st.file_uploader("", type=["png", "jpg", "jpeg", "svg"], key="logo_uploader")
-        if logo_file is not None:
-            st.session_state.logo = logo_file
-            st.success(get_text('logo_upload_success', lang))
-            st.rerun()
-        st.markdown("---")
-
-        # ---- Image Upload ----
+# Display media items
+if st.session_state.media_items:
+    for idx, item in enumerate(st.session_state.media_items):
         with st.container():
-            st.markdown(f"### {get_text('media_image_upload', lang)}")
-            col1, col2 = st.columns([2, 1])
-            with col1:
-                image_file = st.file_uploader("", type=["png", "jpg", "jpeg", "gif", "webp"], key="image_upload")
-            with col2:
-                image_caption = st.text_input(get_text("media_image_caption", lang), key="image_caption")
-            if st.button(get_text("media_add_image_button", lang), use_container_width=True):
-                if image_file is not None:
-                    img_bytes = image_file.read()
-                    st.session_state.media_items.append({
-                        "type": "image",
-                        "data": img_bytes,
-                        "caption": image_caption.strip(),
-                        "filename": image_file.name
-                    })
-                    st.success("✅ Image added!")
-                    st.rerun()
-                else:
-                    st.warning("Please upload an image file.")
-
-        st.markdown("---")
-
-        # ---- Link Upload ----
-        with st.container():
-            st.markdown(f"### 🔗 {get_text('media_add_link_label', lang)}")
-            col1, col2 = st.columns([2, 1])
-            with col1:
-                link = st.text_input("", key="media_link")
-            with col2:
-                caption = st.text_input(get_text("media_caption_label", lang), key="media_caption")
-            if st.button(get_text("media_add_link_button", lang), use_container_width=True):
-                if link.strip():
-                    st.session_state.media_items.append({
-                        "type": "link",
-                        "link": link.strip(),
-                        "caption": caption.strip()
-                    })
-                    st.success("✅ Link added!")
-                    st.rerun()
-                else:
-                    st.warning("Please enter a link.")
-
-        st.markdown("---")
-
-    # ---- Display Media Items (always visible) ----
-    if st.session_state.media_items:
-        for idx, item in enumerate(st.session_state.media_items):
-            with st.container():
-                st.markdown(f'<div class="media-item">', unsafe_allow_html=True)
-                if item["type"] == "image":
-                    try:
-                        img = Image.open(BytesIO(item["data"]))
-                        st.image(img, caption=item["caption"], use_column_width=True)
-                    except Exception as e:
-                        st.error(f"Error displaying image: {e}")
-                elif item["type"] == "link":
-                    st.markdown(f"**{item['caption'] if item['caption'] else get_text('media_youtube', lang)}**")
-                    if "youtube.com" in item['link'] or "youtu.be" in item['link']:
-                        vid_match = re.search(r"(?:v=|\/)([0-9A-Za-z_-]{11})(?:[&?]|$)", item['link'])
-                        if vid_match:
-                            vid = vid_match.group(1)
-                            st.markdown(f'<iframe width="100%" height="315" src="https://www.youtube.com/embed/{vid}" frameborder="0" allowfullscreen></iframe>', unsafe_allow_html=True)
-                        else:
-                            st.markdown(f'<a href="{item["link"]}" target="_blank">{item["link"]}</a>', unsafe_allow_html=True)
+            st.markdown(f'<div class="media-item">', unsafe_allow_html=True)
+            if item["type"] == "image":
+                try:
+                    img = Image.open(BytesIO(item["data"]))
+                    st.image(img, caption=item["caption"], use_column_width=True)
+                except Exception as e:
+                    st.error(f"Error displaying image: {e}")
+            elif item["type"] == "link":
+                st.markdown(f"**{item['caption'] if item['caption'] else get_text('media_youtube', lang)}**")
+                if "youtube.com" in item['link'] or "youtu.be" in item['link']:
+                    vid_match = re.search(r"(?:v=|\/)([0-9A-Za-z_-]{11})(?:[&?]|$)", item['link'])
+                    if vid_match:
+                        vid = vid_match.group(1)
+                        st.markdown(f'<iframe width="100%" height="315" src="https://www.youtube.com/embed/{vid}" frameborder="0" allowfullscreen></iframe>', unsafe_allow_html=True)
                     else:
                         st.markdown(f'<a href="{item["link"]}" target="_blank">{item["link"]}</a>', unsafe_allow_html=True)
                 else:
-                    st.warning("Unknown media type.")
-                
-                if st.session_state.media_authenticated:
-                    if st.button(f"{get_text('media_remove', lang)} {idx+1}", key=f"remove_{idx}"):
-                        del st.session_state.media_items[idx]
-                        st.rerun()
-                
-                st.markdown('</div>', unsafe_allow_html=True)
-                st.markdown("---")
-    else:
-        st.info(get_text("media_empty", lang))
+                    st.markdown(f'<a href="{item["link"]}" target="_blank">{item["link"]}</a>', unsafe_allow_html=True)
+            else:
+                st.warning("Unknown media type.")
+            
+            if st.session_state.media_authenticated:
+                if st.button(f"{get_text('media_remove', lang)} {idx+1}", key=f"remove_{idx}_dash"):
+                    del st.session_state.media_items[idx]
+                    st.rerun()
+            
+            st.markdown('</div>', unsafe_allow_html=True)
+            st.markdown("---")
+else:
+    st.info(get_text("media_empty", lang))
 
-# ---------- ABOUT HCC SECTION ----------
-elif selected == "About":
-    st.markdown(f'<h2 class="section-title">{get_text("about_title", lang)}</h2>', unsafe_allow_html=True)
-    
-    st.markdown(f"""
-    <div class="culture-card">
-        <h3>🏷️ HCC – Haiti Culture Connection</h3>
-        <p>{get_text("about_intro", lang)}</p>
-        <p>{get_text("about_mission", lang)}</p>
-        <p>{get_text("about_connection", lang)}</p>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    st.markdown(f"""
-    <div class="about-quote">
-        " {get_text("about_quote", lang)} "
-    </div>
-    """, unsafe_allow_html=True)
-    
-    st.markdown(f"""
-    <div class="culture-card">
-        <h3>📱 {get_text("about_ceo", lang)}</h3>
-        <p><strong style="color:#004488;">📞 {get_text("about_whatsapp", lang)}</strong></p>
-        <p><strong style="color:#004488;">🌐 {get_text("about_social", lang)}</strong></p>
-        <p style="font-size:0.8rem; color:#555; margin-top:10px;">
-            🇭🇹 <strong>HCC</strong> – Le nouveau patrimoine structurel de la culture haïtienne.
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    st.markdown("""
-    <div style="text-align:center; padding:10px;">
-        <p style="font-size:1.2rem;">
-            <a href="https://wa.me/18094177808" target="_blank" style="text-decoration:none; color:#004488;">📱 WhatsApp</a>
-            &nbsp;|&nbsp;
-            <a href="https://www.instagram.com/HCC" target="_blank" style="text-decoration:none; color:#004488;">📸 Instagram</a>
-            &nbsp;|&nbsp;
-            <a href="https://www.facebook.com/HCC" target="_blank" style="text-decoration:none; color:#004488;">📘 Facebook</a>
-            &nbsp;|&nbsp;
-            <a href="https://twitter.com/HCC" target="_blank" style="text-decoration:none; color:#004488;">🐦 Twitter</a>
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
+# ================================
+# SECTION 9: ABOUT HCC
+# ================================
+st.markdown(f'<h2 class="section-title">{get_text("about_title", lang)}</h2>', unsafe_allow_html=True)
+
+st.markdown(f"""
+<div class="culture-card">
+    <h3>🏷️ HCC – Haiti Culture Connection</h3>
+    <p>{get_text("about_intro", lang)}</p>
+    <p>{get_text("about_mission", lang)}</p>
+    <p>{get_text("about_connection", lang)}</p>
+</div>
+""", unsafe_allow_html=True)
+
+st.markdown(f"""
+<div class="about-quote">
+    " {get_text("about_quote", lang)} "
+</div>
+""", unsafe_allow_html=True)
+
+st.markdown(f"""
+<div class="culture-card">
+    <h3>📱 {get_text("about_ceo", lang)}</h3>
+    <p><strong style="color:#004488;">📞 {get_text("about_whatsapp", lang)}</strong></p>
+    <p><strong style="color:#004488;">🌐 {get_text("about_social", lang)}</strong></p>
+    <p style="font-size:0.8rem; color:#555; margin-top:10px;">
+        🇭🇹 <strong>HCC</strong> – Le nouveau patrimoine structurel de la culture haïtienne.
+    </p>
+</div>
+""", unsafe_allow_html=True)
+
+st.markdown("""
+<div style="text-align:center; padding:10px;">
+    <p style="font-size:1.2rem;">
+        <a href="https://wa.me/18094177808" target="_blank" style="text-decoration:none; color:#004488;">📱 WhatsApp</a>
+        &nbsp;|&nbsp;
+        <a href="https://www.instagram.com/HCC" target="_blank" style="text-decoration:none; color:#004488;">📸 Instagram</a>
+        &nbsp;|&nbsp;
+        <a href="https://www.facebook.com/HCC" target="_blank" style="text-decoration:none; color:#004488;">📘 Facebook</a>
+        &nbsp;|&nbsp;
+        <a href="https://twitter.com/HCC" target="_blank" style="text-decoration:none; color:#004488;">🐦 Twitter</a>
+    </p>
+</div>
+""", unsafe_allow_html=True)
 
 # ---------- Footer ----------
 st.markdown("---")
