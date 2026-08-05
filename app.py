@@ -379,9 +379,9 @@ TEXTS = {
     },
     # Owner space labels
     "owner_login_title": {
-        "en": "🔐 Owner Space – Login",
-        "fr": "🔐 Espace propriétaire – Connexion",
-        "es": "🔐 Espacio del propietario – Iniciar sesión"
+        "en": "🔐 Owner Login",
+        "fr": "🔐 Connexion propriétaire",
+        "es": "🔐 Inicio de sesión propietario"
     },
     "owner_logout_button": {
         "en": "🚪 Logout",
@@ -394,9 +394,14 @@ TEXTS = {
         "es": "❌ Contraseña incorrecta. Por favor, intente de nuevo."
     },
     "owner_logged_in_msg": {
-        "en": "✅ You are logged in as the page owner.",
-        "fr": "✅ Vous êtes connecté en tant que propriétaire de la page.",
-        "es": "✅ Ha iniciado sesión como propietario de la página."
+        "en": "✅ Logged in as owner.",
+        "fr": "✅ Connecté en tant que propriétaire.",
+        "es": "✅ Conectado como propietario."
+    },
+    "owner_toggle_button": {
+        "en": "🔐 Owner",
+        "fr": "🔐 Propriétaire",
+        "es": "🔐 Propietario"
     },
     "media_add_image": {
         "en": "📸 Upload Image",
@@ -443,6 +448,8 @@ if 'logo' not in st.session_state:
     st.session_state.logo = None
 if 'media_authenticated' not in st.session_state:
     st.session_state.media_authenticated = False
+if 'show_owner_panel' not in st.session_state:
+    st.session_state.show_owner_panel = False
 
 # ---------- Language selection ----------
 def set_language():
@@ -456,7 +463,7 @@ st.markdown("""
         background: #e6f0ff !important;
     }
     
-    /* Top bar with language selector */
+    /* Top bar with language selector and owner toggle */
     .top-bar {
         display: flex;
         justify-content: space-between;
@@ -472,18 +479,31 @@ st.markdown("""
         align-items: center;
         gap: 15px;
     }
-    .top-bar .lang-area {
+    .top-bar .right-area {
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 15px;
     }
-    .top-bar .lang-area select {
+    .top-bar .right-area select {
         padding: 6px 12px;
         border-radius: 8px;
         border: 1px solid rgba(0, 68, 170, 0.2);
         background: white;
         color: #1a2b4c;
         font-size: 0.9rem;
+    }
+    .owner-toggle-btn {
+        background: #0066cc !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 20px !important;
+        padding: 6px 16px !important;
+        font-size: 0.9rem !important;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+    .owner-toggle-btn:hover {
+        background: #004488 !important;
     }
     
     /* Animated Logo Container */
@@ -705,20 +725,20 @@ st.markdown("""
         padding: 10px 0 20px 0;
         opacity: 0.8;
     }
-    .owner-box {
-        background: rgba(0, 68, 170, 0.05);
+    .owner-panel {
+        background: rgba(255, 255, 255, 0.8);
         border: 1px solid rgba(0, 68, 170, 0.2);
         border-radius: 12px;
         padding: 20px;
         margin: 10px 0 20px 0;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
     }
     </style>
 """, unsafe_allow_html=True)
 
-# ---------- Top Bar: Language Selector + Animated Logo ----------
+# ---------- Top Bar: Logo, Language, and Owner Toggle ----------
 lang = st.session_state.lang
 
-# Top bar with language selector on the right
 col1, col2, col3 = st.columns([1, 2, 1])
 with col1:
     # Animated Logo (CSS-based)
@@ -747,8 +767,9 @@ with col1:
     """, unsafe_allow_html=True)
 
 with col3:
-    # Language selector aligned to the right
-    st.markdown('<div style="display:flex; justify-content:flex-end; padding-top:10px;">', unsafe_allow_html=True)
+    # Right side: language selector + owner toggle button
+    st.markdown('<div style="display:flex; justify-content:flex-end; align-items:center; gap:10px; padding-top:10px;">', unsafe_allow_html=True)
+    # Language selector
     lang_choice = st.selectbox(
         "🌐 Language",
         ["English", "Français", "Español"],
@@ -759,79 +780,85 @@ with col3:
         on_change=set_language,
         label_visibility="collapsed"
     )
+    # Owner toggle button
+    if st.button(get_text('owner_toggle_button', lang), key="owner_toggle_btn", use_container_width=False):
+        st.session_state.show_owner_panel = not st.session_state.show_owner_panel
+        st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
 
-# ---------- Owner Space (Top of Main Page) ----------
-st.markdown("---")
-with st.expander("🔐 Owner Space – Login to manage logo and media", expanded=False):
-    if not st.session_state.media_authenticated:
-        st.markdown(f"### {get_text('owner_login_title', lang)}")
-        password_input = st.text_input("Enter password", type="password", placeholder="Password", key="owner_password_top")
-        if st.button("🔑 Login", key="owner_login_button", use_container_width=True):
-            if password_input == "2026":
-                st.session_state.media_authenticated = True
+# ---------- Owner Panel (collapsible) ----------
+if st.session_state.show_owner_panel:
+    with st.container():
+        st.markdown('<div class="owner-panel">', unsafe_allow_html=True)
+        if not st.session_state.media_authenticated:
+            st.markdown(f"### {get_text('owner_login_title', lang)}")
+            password_input = st.text_input("Enter password", type="password", placeholder="Password", key="owner_password_top")
+            if st.button("🔑 Login", key="owner_login_button", use_container_width=True):
+                if password_input == "2026":
+                    st.session_state.media_authenticated = True
+                    st.rerun()
+                else:
+                    st.error(get_text('owner_wrong_password', lang))
+        else:
+            st.success(get_text('owner_logged_in_msg', lang))
+            if st.button(get_text('owner_logout_button', lang), key="owner_logout_button", use_container_width=True):
+                st.session_state.media_authenticated = False
                 st.rerun()
-            else:
-                st.error(get_text('owner_wrong_password', lang))
-    else:
-        st.success(get_text('owner_logged_in_msg', lang))
-        if st.button(get_text('owner_logout_button', lang), key="owner_logout_button", use_container_width=True):
-            st.session_state.media_authenticated = False
-            st.rerun()
-        st.markdown("---")
+            st.markdown("---")
 
-        # ---- Logo Upload ----
-        st.markdown(f"### {get_text('logo_upload_title', lang)}")
-        st.markdown(f"<p style='font-size:0.9rem; color:#1a2b4c;'>{get_text('logo_upload_subtitle', lang)}</p>", unsafe_allow_html=True)
-        logo_file = st.file_uploader("", type=["png", "jpg", "jpeg", "svg"], key="logo_uploader_top")
-        if logo_file is not None:
-            st.session_state.logo = logo_file
-            st.success(get_text('logo_upload_success', lang))
-            st.rerun()
-
-        st.markdown("---")
-
-        # ---- Image Upload ----
-        st.markdown(f"### {get_text('media_add_image', lang)}")
-        col1, col2 = st.columns([2, 1])
-        with col1:
-            image_file = st.file_uploader("", type=["png", "jpg", "jpeg", "gif", "webp"], key="image_upload_owner")
-        with col2:
-            image_caption = st.text_input(get_text('media_image_caption', lang), key="image_caption_owner")
-        if st.button(get_text('media_add_image_button', lang), key="add_image_owner", use_container_width=True):
-            if image_file is not None:
-                img_bytes = image_file.read()
-                st.session_state.media_items.append({
-                    "type": "image",
-                    "data": img_bytes,
-                    "caption": image_caption.strip(),
-                    "filename": image_file.name
-                })
-                st.success("✅ Image added!")
+            # ---- Logo Upload ----
+            st.markdown(f"### {get_text('logo_upload_title', lang)}")
+            st.markdown(f"<p style='font-size:0.9rem; color:#1a2b4c;'>{get_text('logo_upload_subtitle', lang)}</p>", unsafe_allow_html=True)
+            logo_file = st.file_uploader("", type=["png", "jpg", "jpeg", "svg"], key="logo_uploader_top")
+            if logo_file is not None:
+                st.session_state.logo = logo_file
+                st.success(get_text('logo_upload_success', lang))
                 st.rerun()
-            else:
-                st.warning("Please upload an image file.")
 
-        st.markdown("---")
+            st.markdown("---")
 
-        # ---- Link Upload ----
-        st.markdown(f"### {get_text('media_add_link', lang)}")
-        col1, col2 = st.columns([2, 1])
-        with col1:
-            link = st.text_input("", key="media_link_owner")
-        with col2:
-            caption = st.text_input(get_text('media_link_caption', lang), key="media_caption_owner")
-        if st.button(get_text('media_add_link_button', lang), key="add_link_owner", use_container_width=True):
-            if link.strip():
-                st.session_state.media_items.append({
-                    "type": "link",
-                    "link": link.strip(),
-                    "caption": caption.strip()
-                })
-                st.success("✅ Link added!")
-                st.rerun()
-            else:
-                st.warning("Please enter a link.")
+            # ---- Image Upload ----
+            st.markdown(f"### {get_text('media_add_image', lang)}")
+            col1, col2 = st.columns([2, 1])
+            with col1:
+                image_file = st.file_uploader("", type=["png", "jpg", "jpeg", "gif", "webp"], key="image_upload_owner")
+            with col2:
+                image_caption = st.text_input(get_text('media_image_caption', lang), key="image_caption_owner")
+            if st.button(get_text('media_add_image_button', lang), key="add_image_owner", use_container_width=True):
+                if image_file is not None:
+                    img_bytes = image_file.read()
+                    st.session_state.media_items.append({
+                        "type": "image",
+                        "data": img_bytes,
+                        "caption": image_caption.strip(),
+                        "filename": image_file.name
+                    })
+                    st.success("✅ Image added!")
+                    st.rerun()
+                else:
+                    st.warning("Please upload an image file.")
+
+            st.markdown("---")
+
+            # ---- Link Upload ----
+            st.markdown(f"### {get_text('media_add_link', lang)}")
+            col1, col2 = st.columns([2, 1])
+            with col1:
+                link = st.text_input("", key="media_link_owner")
+            with col2:
+                caption = st.text_input(get_text('media_link_caption', lang), key="media_caption_owner")
+            if st.button(get_text('media_add_link_button', lang), key="add_link_owner", use_container_width=True):
+                if link.strip():
+                    st.session_state.media_items.append({
+                        "type": "link",
+                        "link": link.strip(),
+                        "caption": caption.strip()
+                    })
+                    st.success("✅ Link added!")
+                    st.rerun()
+                else:
+                    st.warning("Please enter a link.")
+        st.markdown('</div>', unsafe_allow_html=True)
 
 # ---------- Main Content: Dashboard ----------
 st.markdown(f'<h1 style="text-align:center; color:#004488; font-size:2.5rem; margin-top:0;">{get_text("dashboard_title", lang)}</h1>', unsafe_allow_html=True)
