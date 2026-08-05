@@ -330,31 +330,6 @@ TEXTS = {
         "fr": "Partagez des images, des vidéos YouTube ou des liens Dropbox avec la communauté.",
         "es": "Comparte imágenes, videos de YouTube o enlaces de Dropbox con la comunidad."
     },
-    "media_password_prompt": {
-        "en": "🔐 Enter the page owner password to add media:",
-        "fr": "🔐 Entrez le mot de passe du propriétaire de la page pour ajouter des médias :",
-        "es": "🔐 Ingrese la contraseña del propietario de la página para agregar medios:"
-    },
-    "media_password_placeholder": {
-        "en": "Enter password",
-        "fr": "Entrez le mot de passe",
-        "es": "Ingrese contraseña"
-    },
-    "media_login_button": {
-        "en": "🔑 Login",
-        "fr": "🔑 Se connecter",
-        "es": "🔑 Iniciar sesión"
-    },
-    "media_logout_button": {
-        "en": "🚪 Logout",
-        "fr": "🚪 Se déconnecter",
-        "es": "🚪 Cerrar sesión"
-    },
-    "media_wrong_password": {
-        "en": "❌ Incorrect password. Please try again.",
-        "fr": "❌ Mot de passe incorrect. Veuillez réessayer.",
-        "es": "❌ Contraseña incorrecta. Por favor, intente de nuevo."
-    },
     "media_add_link_label": {
         "en": "Media Link (YouTube or Dropbox)",
         "fr": "Lien média (YouTube ou Dropbox)",
@@ -431,6 +406,27 @@ TEXTS = {
         "en": "📊 Dashboard",
         "fr": "📊 Tableau de bord",
         "es": "📊 Panel de control"
+    },
+    # Owner space labels
+    "owner_login_title": {
+        "en": "🔐 Owner Space – Login",
+        "fr": "🔐 Espace propriétaire – Connexion",
+        "es": "🔐 Espacio del propietario – Iniciar sesión"
+    },
+    "owner_logout_button": {
+        "en": "🚪 Logout",
+        "fr": "🚪 Se déconnecter",
+        "es": "🚪 Cerrar sesión"
+    },
+    "owner_wrong_password": {
+        "en": "❌ Incorrect password. Please try again.",
+        "fr": "❌ Mot de passe incorrect. Veuillez réessayer.",
+        "es": "❌ Contraseña incorrecta. Por favor, intente de nuevo."
+    },
+    "owner_logged_in_msg": {
+        "en": "✅ You are logged in as the page owner.",
+        "fr": "✅ Vous êtes connecté en tant que propriétaire de la page.",
+        "es": "✅ Ha iniciado sesión como propietario de la página."
     }
 }
 
@@ -451,36 +447,6 @@ if 'media_authenticated' not in st.session_state:
 # ---------- Language selection ----------
 def set_language():
     st.session_state.lang = LANGUAGES[st.session_state.lang_selector]
-
-# ---------- Sidebar (owner space only) ----------
-with st.sidebar:
-    st.markdown("### 🔐 Owner Space")
-    
-    if not st.session_state.media_authenticated:
-        password_input = st.text_input("Enter password", type="password", placeholder="Password", key="owner_password")
-        if st.button("🔑 Login", use_container_width=True):
-            if password_input == "2026":
-                st.session_state.media_authenticated = True
-                st.rerun()
-            else:
-                st.error("❌ Incorrect password.")
-    else:
-        st.success("✅ Logged in as owner")
-        if st.button("🚪 Logout", use_container_width=True):
-            st.session_state.media_authenticated = False
-            st.rerun()
-        
-        st.markdown("---")
-        st.markdown(f"### {get_text('logo_upload_title', st.session_state.lang)}")
-        logo_file = st.file_uploader("", type=["png", "jpg", "jpeg", "svg"], key="logo_uploader_sidebar")
-        if logo_file is not None:
-            st.session_state.logo = logo_file
-            st.success(get_text('logo_upload_success', st.session_state.lang))
-            st.rerun()
-    
-    st.markdown("---")
-    st.caption("🇭🇹 Haiti Culture Connection")
-    st.caption("v2.0 | Dashboard Edition")
 
 # ---------- CSS (Light Blue Theme + Animated Logo) ----------
 st.markdown("""
@@ -739,6 +705,13 @@ st.markdown("""
         padding: 10px 0 20px 0;
         opacity: 0.8;
     }
+    .owner-box {
+        background: rgba(0, 68, 170, 0.05);
+        border: 1px solid rgba(0, 68, 170, 0.2);
+        border-radius: 12px;
+        padding: 20px;
+        margin: 10px 0 20px 0;
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -787,6 +760,32 @@ with col3:
         label_visibility="collapsed"
     )
     st.markdown('</div>', unsafe_allow_html=True)
+
+# ---------- Owner Space (Top of Main Page) ----------
+st.markdown("---")
+with st.expander("🔐 Owner Space – Login to manage logo and media", expanded=False):
+    if not st.session_state.media_authenticated:
+        st.markdown(f"### {get_text('owner_login_title', lang)}")
+        password_input = st.text_input("Enter password", type="password", placeholder="Password", key="owner_password_top")
+        if st.button("🔑 Login", key="owner_login_button", use_container_width=True):
+            if password_input == "2026":
+                st.session_state.media_authenticated = True
+                st.rerun()
+            else:
+                st.error(get_text('owner_wrong_password', lang))
+    else:
+        st.success(get_text('owner_logged_in_msg', lang))
+        if st.button(get_text('owner_logout_button', lang), key="owner_logout_button", use_container_width=True):
+            st.session_state.media_authenticated = False
+            st.rerun()
+        st.markdown("---")
+        st.markdown(f"### {get_text('logo_upload_title', lang)}")
+        st.markdown(f"<p style='font-size:0.9rem; color:#1a2b4c;'>{get_text('logo_upload_subtitle', lang)}</p>", unsafe_allow_html=True)
+        logo_file = st.file_uploader("", type=["png", "jpg", "jpeg", "svg"], key="logo_uploader_top")
+        if logo_file is not None:
+            st.session_state.logo = logo_file
+            st.success(get_text('logo_upload_success', lang))
+            st.rerun()
 
 # ---------- Main Content: Dashboard ----------
 st.markdown(f'<h1 style="text-align:center; color:#004488; font-size:2.5rem; margin-top:0;">{get_text("dashboard_title", lang)}</h1>', unsafe_allow_html=True)
@@ -1058,25 +1057,9 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# Media: Password protected add forms
-if not st.session_state.media_authenticated:
-    st.markdown(f"### {get_text('media_password_prompt', lang)}")
-    password_input = st.text_input("", type="password", placeholder=get_text("media_password_placeholder", lang), key="media_password_dash")
-    col1, col2 = st.columns([1, 3])
-    with col1:
-        if st.button(get_text("media_login_button", lang), use_container_width=True):
-            if password_input == "2026":
-                st.session_state.media_authenticated = True
-                st.rerun()
-            else:
-                st.error(get_text("media_wrong_password", lang))
-else:
-    st.success("✅ Logged in as owner – you can add media below.")
-    if st.button(get_text("media_logout_button", lang), use_container_width=True):
-        st.session_state.media_authenticated = False
-        st.rerun()
-    st.markdown("---")
-    
+# Show upload forms only if authenticated
+if st.session_state.media_authenticated:
+    st.success("🔓 You are logged in – you can add media.")
     # Image upload
     with st.container():
         st.markdown(f"### {get_text('media_image_upload', lang)}")
@@ -1085,7 +1068,7 @@ else:
             image_file = st.file_uploader("", type=["png", "jpg", "jpeg", "gif", "webp"], key="image_upload_dash")
         with col2:
             image_caption = st.text_input(get_text("media_image_caption", lang), key="image_caption_dash")
-        if st.button(get_text("media_add_image_button", lang), use_container_width=True):
+        if st.button(get_text("media_add_image_button", lang), key="add_image_button", use_container_width=True):
             if image_file is not None:
                 img_bytes = image_file.read()
                 st.session_state.media_items.append({
@@ -1109,7 +1092,7 @@ else:
             link = st.text_input("", key="media_link_dash")
         with col2:
             caption = st.text_input(get_text("media_caption_label", lang), key="media_caption_dash")
-        if st.button(get_text("media_add_link_button", lang), use_container_width=True):
+        if st.button(get_text("media_add_link_button", lang), key="add_link_button", use_container_width=True):
             if link.strip():
                 st.session_state.media_items.append({
                     "type": "link",
@@ -1120,8 +1103,10 @@ else:
                 st.rerun()
             else:
                 st.warning("Please enter a link.")
-    
-    st.markdown("---")
+else:
+    st.info("🔐 Please log in as the page owner (at the top of this page) to add media.")
+
+st.markdown("---")
 
 # Display media items
 if st.session_state.media_items:
