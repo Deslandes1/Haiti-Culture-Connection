@@ -1,6 +1,5 @@
 import streamlit as st
 from PIL import Image
-import os
 
 # ---------- Page Config ----------
 st.set_page_config(
@@ -10,40 +9,48 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# ---------- Custom CSS ----------
+# ---------- Custom CSS (Light Blue Theme) ----------
 st.markdown("""
     <style>
+    /* Main background - light blue */
     .stApp {
-        background: #0a1628 !important;
+        background: #e6f0ff !important;
     }
+    
+    /* Sidebar - light blue, slightly darker for contrast */
     .stSidebar,
     .stSidebar .sidebar-content,
     section[data-testid="stSidebar"] {
-        background: #0d1f3c !important;
+        background: #d4e4f7 !important;
     }
+    
     .stSidebar .stMarkdown,
     .stSidebar .stCaption,
     .stSidebar .stButton button {
-        color: #ffffff !important;
+        color: #1a2b4c !important;
     }
+    
+    /* Main title - blue gradient */
     .main-title {
         font-size: 3.5rem;
         font-weight: 900;
         text-align: center;
-        background: linear-gradient(90deg, #00209f, #d21034, #00209f);
+        background: linear-gradient(135deg, #0044aa, #0066cc, #3399ff);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
         padding: 20px 0;
-        text-shadow: 0 0 60px rgba(0, 32, 159, 0.3);
+        text-shadow: 0 0 60px rgba(0, 68, 170, 0.2);
         animation: glow 3s ease-in-out infinite;
     }
+    
     @keyframes glow {
-        0%, 100% { filter: drop-shadow(0 0 20px rgba(210, 16, 52, 0.2)); }
-        50% { filter: drop-shadow(0 0 40px rgba(0, 32, 159, 0.4)); }
+        0%, 100% { filter: drop-shadow(0 0 20px rgba(0, 68, 170, 0.15)); }
+        50% { filter: drop-shadow(0 0 40px rgba(0, 68, 170, 0.3)); }
     }
+    
     .sub-title {
-        color: #ffcc00;
+        color: #004488;
         font-size: 1.2rem;
         text-align: center;
         font-weight: 600;
@@ -51,46 +58,50 @@ st.markdown("""
         text-transform: uppercase;
         margin-bottom: 30px;
     }
+    
+    /* Section headers */
     .section-title {
-        color: #ffcc00;
+        color: #004488;
         font-size: 2rem;
         font-weight: 700;
-        border-bottom: 3px solid #d21034;
+        border-bottom: 3px solid #3399ff;
         padding-bottom: 10px;
         margin-top: 40px;
         margin-bottom: 20px;
     }
-    .section-subtitle {
-        color: #ffffff;
-        font-size: 1.2rem;
-        font-weight: 500;
-        margin-bottom: 10px;
-    }
+    
     .culture-card {
-        background: rgba(255, 255, 255, 0.05);
+        background: rgba(255, 255, 255, 0.6);
         border-radius: 15px;
         padding: 20px;
         margin: 10px 0;
-        border: 1px solid rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(0, 68, 170, 0.1);
         transition: 0.3s;
         backdrop-filter: blur(10px);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
     }
     .culture-card:hover {
-        background: rgba(255, 255, 255, 0.1);
-        border-color: #d21034;
+        background: rgba(255, 255, 255, 0.8);
+        border-color: #3399ff;
         transform: translateY(-5px);
-        box-shadow: 0 10px 40px rgba(210, 16, 52, 0.15);
+        box-shadow: 0 8px 25px rgba(0, 68, 170, 0.15);
     }
     .culture-card h3 {
-        color: #ffcc00;
+        color: #003366;
         margin-bottom: 10px;
     }
+    .culture-card h4 {
+        color: #004488;
+        margin-bottom: 8px;
+    }
     .culture-card p {
-        color: #dddddd;
+        color: #1a2b4c;
         line-height: 1.6;
     }
+    
+    /* Sidebar navigation */
     .nav-item {
-        color: #ffffff !important;
+        color: #1a2b4c !important;
         padding: 10px 15px;
         border-radius: 8px;
         margin: 5px 0;
@@ -100,35 +111,30 @@ st.markdown("""
         font-weight: 500;
     }
     .nav-item:hover {
-        background: rgba(210, 16, 52, 0.2);
-        color: #ffcc00 !important;
+        background: rgba(0, 68, 170, 0.1);
+        color: #003366 !important;
     }
-    .logo-container {
-        text-align: center;
-        padding: 20px 0;
-    }
-    .logo-container img {
-        max-width: 200px;
-        border-radius: 15px;
-        border: 2px solid rgba(255, 255, 255, 0.1);
-    }
+    
+    /* Footer */
     .footer {
         text-align: center;
         padding: 30px 0;
-        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        border-top: 1px solid rgba(0, 68, 170, 0.1);
         margin-top: 40px;
-        color: #888888;
+        color: #555;
         font-size: 0.9rem;
     }
     .footer .heart {
         color: #d21034;
     }
+    
     .video-container {
         border-radius: 15px;
         overflow: hidden;
         margin: 15px 0;
-        border: 1px solid rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(0, 68, 170, 0.1);
     }
+    
     .white-text {
         color: #ffffff !important;
     }
@@ -138,8 +144,9 @@ st.markdown("""
     .red-text {
         color: #d21034 !important;
     }
+    
     .stButton button {
-        background: linear-gradient(135deg, #00209f, #d21034) !important;
+        background: linear-gradient(135deg, #0066cc, #3399ff) !important;
         color: white !important;
         border: none !important;
         border-radius: 25px !important;
@@ -149,20 +156,26 @@ st.markdown("""
     }
     .stButton button:hover {
         transform: scale(1.05) !important;
-        box-shadow: 0 5px 30px rgba(210, 16, 52, 0.4) !important;
+        box-shadow: 0 5px 30px rgba(0, 68, 170, 0.3) !important;
+    }
+    
+    /* Adjust text colors for contrast */
+    .stRadio label, .stRadio div {
+        color: #1a2b4c !important;
+    }
+    .stMarkdown {
+        color: #1a2b4c !important;
+    }
+    .stCaption {
+        color: #1a2b4c !important;
     }
     </style>
 """, unsafe_allow_html=True)
 
 # ---------- Sidebar Navigation ----------
 with st.sidebar:
-    st.markdown("""
-    <div class="logo-container">
-        <img src="https://via.placeholder.com/200x200/00209f/d21034?text=🇭🇹" alt="Haiti Culture Logo" style="width:150px;border-radius:50%;border:3px solid #ffcc00;">
-    </div>
-    """, unsafe_allow_html=True)
+    # Removed logo placeholder
     
-    st.markdown("---")
     st.markdown("### 🌍 Explore Haiti")
     
     nav_items = [
@@ -196,13 +209,12 @@ with st.sidebar:
 
 # ---------- Main Content ----------
 
-# Display logo if uploaded – FIXED VERSION
+# Display logo if uploaded
 if 'logo' in st.session_state and st.session_state['logo'] is not None:
     try:
         logo = Image.open(st.session_state['logo'])
         col1, col2, col3 = st.columns([1, 2, 1])
         with col2:
-            # Fixed: use_column_width instead of use_container_width
             st.image(logo, use_column_width=True)
     except Exception as e:
         st.error(f"Error displaying logo: {e}")
@@ -219,8 +231,8 @@ if selected == "🏠 Home":
     # Logo design prompt (expandable)
     with st.expander("🎨 View Logo Design Prompt (Click to expand)", expanded=False):
         st.markdown("""
-        <div style="background:rgba(255,255,255,0.05); padding:20px; border-radius:10px; color:#dddddd; font-size:0.95rem; line-height:1.8;">
-            <p><strong style="color:#ffcc00;">Logo Description:</strong></p>
+        <div style="background:rgba(255,255,255,0.5); padding:20px; border-radius:10px; color:#1a2b4c; font-size:0.95rem; line-height:1.8;">
+            <p><strong style="color:#004488;">Logo Description:</strong></p>
             <p>
             A high-resolution, cinematic close-up of the "Haiti Culture Connection" logo from image_0.png, 
             rendered as a polished metallic and enamel emblem. The central 3D-beveled 'HC' monogram 
@@ -250,7 +262,7 @@ if selected == "🏠 Home":
                 story of strength, creativity, and community.
             </p>
             <p>
-                <strong style="color:#ffcc00;">Explore our sections to learn about:</strong><br>
+                <strong style="color:#004488;">Explore our sections to learn about:</strong><br>
                 📜 History – The first independent Black republic<br>
                 🎵 Music – The soul of Haiti<br>
                 🎨 Art – Vibrant expressions of Haitian life<br>
@@ -266,11 +278,11 @@ if selected == "🏠 Home":
         <div class="culture-card" style="text-align:center;">
             <h3>🇭🇹 Quick Facts</h3>
             <p style="font-size:0.95rem;">
-                <strong style="color:#ffcc00;">Capital:</strong> Port-au-Prince<br>
-                <strong style="color:#ffcc00;">Population:</strong> 11.4 million<br>
-                <strong style="color:#ffcc00;">Languages:</strong> French, Haitian Creole<br>
-                <strong style="color:#ffcc00;">Currency:</strong> Gourde (HTG)<br>
-                <strong style="color:#ffcc00;">Independence:</strong> January 1, 1804
+                <strong style="color:#004488;">Capital:</strong> Port-au-Prince<br>
+                <strong style="color:#004488;">Population:</strong> 11.4 million<br>
+                <strong style="color:#004488;">Languages:</strong> French, Haitian Creole<br>
+                <strong style="color:#004488;">Currency:</strong> Gourde (HTG)<br>
+                <strong style="color:#004488;">Independence:</strong> January 1, 1804
             </p>
             <p style="font-size:1.5rem; margin-top:10px;">
                 🇭🇹❤️💙
@@ -296,7 +308,7 @@ elif selected == "📜 History":
                 Haiti stands as a symbol of freedom, resistance, and hope for oppressed people worldwide.
             </p>
             <p>
-                <strong style="color:#ffcc00;">Key Historical Sites:</strong><br>
+                <strong style="color:#004488;">Key Historical Sites:</strong><br>
                 • The Citadelle Laferrière – A UNESCO World Heritage Site<br>
                 • Sans-Souci Palace – Symbol of Haitian royalty<br>
                 • The Cathedral of Port-au-Prince – Rich architectural history
@@ -304,7 +316,7 @@ elif selected == "📜 History":
         </div>
         """, unsafe_allow_html=True)
     with col2:
-        st.image("https://via.placeholder.com/400x300/00209f/d21034?text=🇭🇹+Haitian+History", use_column_width=True)
+        st.image("https://via.placeholder.com/400x300/0066cc/ffffff?text=🇭🇹+Haitian+History", use_column_width=True)
         st.caption("📸 The Citadelle Laferrière - A symbol of Haitian freedom")
 
 elif selected == "🎵 Music":
@@ -328,7 +340,7 @@ elif selected == "🎵 Music":
                 The most popular modern genre in Haiti. Created by Nemours Jean-Baptiste in the 1950s, 
                 Compas is a smooth, danceable rhythm that blends jazz, Latin, and Caribbean sounds.
             </p>
-            <p><strong style="color:#ffcc00;">Famous Artists:</strong> Tabou Combo, Coupé Cloué, Jean Baptiste</p>
+            <p><strong style="color:#004488;">Famous Artists:</strong> Tabou Combo, Coupé Cloué, Jean Baptiste</p>
         </div>
         """, unsafe_allow_html=True)
         st.markdown("""
@@ -363,7 +375,7 @@ elif selected == "🎵 Music":
     <div class="culture-card">
         <h4>🎬 Watch: Haitian Music Documentary (Placeholder)</h4>
         <div class="video-container">
-            <div style="background:#0d1f3c; padding:60px; text-align:center; color:#888;">
+            <div style="background:#d4e4f7; padding:60px; text-align:center; color:#555;">
                 🎥 YouTube Video Will Appear Here
                 <p style="font-size:0.8rem; margin-top:10px;">Replace with actual YouTube embed</p>
             </div>
@@ -392,7 +404,7 @@ elif selected == "🎨 Art":
                 flat perspectives, and scenes of daily life. The Centre d'Art in Port-au-Prince 
                 is a hub for this style.
             </p>
-            <div style="background:#0d1f3c; padding:30px; text-align:center; color:#888; border-radius:10px;">
+            <div style="background:#d4e4f7; padding:30px; text-align:center; color:#555; border-radius:10px;">
                 🎨 Image Here
             </div>
         </div>
@@ -406,7 +418,7 @@ elif selected == "🎨 Art":
                 Haitian heroes, Vodou spirits, and everyday life. The iron market in Port-au-Prince 
                 is a great place to see this art form.
             </p>
-            <div style="background:#0d1f3c; padding:30px; text-align:center; color:#888; border-radius:10px;">
+            <div style="background:#d4e4f7; padding:30px; text-align:center; color:#555; border-radius:10px;">
                 🗿 Image Here
             </div>
         </div>
@@ -419,7 +431,7 @@ elif selected == "🎨 Art":
                 Ceremonial flags (drapo) made from sequins and beads are used in Vodou ceremonies. 
                 These intricate, colorful flags depict spirits and are works of art in their own right.
             </p>
-            <div style="background:#0d1f3c; padding:30px; text-align:center; color:#888; border-radius:10px;">
+            <div style="background:#d4e4f7; padding:30px; text-align:center; color:#555; border-radius:10px;">
                 🎭 Image Here
             </div>
         </div>
@@ -479,13 +491,13 @@ elif selected == "🍲 Cuisine":
     <div class="culture-card">
         <h4>🍽️ Local Dishes to Try (Placeholder Images)</h4>
         <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
-            <div style="background:#0d1f3c; padding:20px; border-radius:10px; text-align:center; color:#888; flex:1; min-width:100px;">
+            <div style="background:#d4e4f7; padding:20px; border-radius:10px; text-align:center; color:#555; flex:1; min-width:100px;">
                 🍛 Griot
             </div>
-            <div style="background:#0d1f3c; padding:20px; border-radius:10px; text-align:center; color:#888; flex:1; min-width:100px;">
+            <div style="background:#d4e4f7; padding:20px; border-radius:10px; text-align:center; color:#555; flex:1; min-width:100px;">
                 🍲 Soup Joumou
             </div>
-            <div style="background:#0d1f3c; padding:20px; border-radius:10px; text-align:center; color:#888; flex:1; min-width:100px;">
+            <div style="background:#d4e4f7; padding:20px; border-radius:10px; text-align:center; color:#555; flex:1; min-width:100px;">
                 🍗 Poulet Creole
             </div>
         </div>
@@ -512,7 +524,7 @@ elif selected == "🗣️ Language":
                 French is the language of government, education, and media in Haiti. It was inherited 
                 from the French colonial period and remains a language of prestige and opportunity.
             </p>
-            <p><strong style="color:#ffcc00;">Example:</strong> "Bonjour, comment allez-vous?"</p>
+            <p><strong style="color:#004488;">Example:</strong> "Bonjour, comment allez-vous?"</p>
         </div>
         """, unsafe_allow_html=True)
     with col2:
@@ -523,20 +535,20 @@ elif selected == "🗣️ Language":
                 Haitian Creole is the language of the people. It evolved from French with influences 
                 from African languages, Spanish, and Taino. It became an official language in 1987.
             </p>
-            <p><strong style="color:#ffcc00;">Example:</strong> "Bonjou, kijan ou ye?"</p>
-            <p style="font-size:0.8rem; color:#888;">Hello, how are you?</p>
+            <p><strong style="color:#004488;">Example:</strong> "Bonjou, kijan ou ye?"</p>
+            <p style="font-size:0.8rem; color:#555;">Hello, how are you?</p>
         </div>
         """, unsafe_allow_html=True)
     st.markdown("""
     <div class="culture-card">
         <h4>🗣️ Common Phrases in Haitian Creole</h4>
-        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; color:#dddddd;">
-            <div><strong style="color:#ffcc00;">Mèsi</strong> - Thank you</div>
-            <div><strong style="color:#ffcc00;">Wi</strong> - Yes</div>
-            <div><strong style="color:#ffcc00;">Non</strong> - No</div>
-            <div><strong style="color:#ffcc00;">Bonswa</strong> - Good evening</div>
-            <div><strong style="color:#ffcc00;">Orevwa</strong> - Goodbye</div>
-            <div><strong style="color:#ffcc00;">Souple</strong> - Please</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; color:#1a2b4c;">
+            <div><strong style="color:#004488;">Mèsi</strong> - Thank you</div>
+            <div><strong style="color:#004488;">Wi</strong> - Yes</div>
+            <div><strong style="color:#004488;">Non</strong> - No</div>
+            <div><strong style="color:#004488;">Bonswa</strong> - Good evening</div>
+            <div><strong style="color:#004488;">Orevwa</strong> - Goodbye</div>
+            <div><strong style="color:#004488;">Souple</strong> - Please</div>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -561,7 +573,7 @@ elif selected == "🎉 Festivals":
                 Haiti's Carnival is one of the most vibrant in the Caribbean. It takes place in 
                 February or March and features elaborate costumes, music, dance, and parades.
             </p>
-            <p><strong style="color:#ffcc00;">Key Cities:</strong> Port-au-Prince, Jacmel</p>
+            <p><strong style="color:#004488;">Key Cities:</strong> Port-au-Prince, Jacmel</p>
         </div>
         """, unsafe_allow_html=True)
         st.markdown("""
@@ -597,10 +609,10 @@ elif selected == "🎉 Festivals":
     <div class="culture-card">
         <h4>🎬 Festival Videos (Placeholder)</h4>
         <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
-            <div style="background:#0d1f3c; padding:40px; border-radius:10px; text-align:center; color:#888; flex:1; min-width:200px;">
+            <div style="background:#d4e4f7; padding:40px; border-radius:10px; text-align:center; color:#555; flex:1; min-width:200px;">
                 🎥 Carnival 2024
             </div>
-            <div style="background:#0d1f3c; padding:40px; border-radius:10px; text-align:center; color:#888; flex:1; min-width:200px;">
+            <div style="background:#d4e4f7; padding:40px; border-radius:10px; text-align:center; color:#555; flex:1; min-width:200px;">
                 🎥 Rara Performance
             </div>
         </div>
@@ -611,18 +623,18 @@ elif selected == "🎉 Festivals":
 st.markdown("""
 <div class="footer">
     <p>
-        🇭🇹 <strong style="color:#ffcc00;">Haiti Culture Connection</strong> 🇭🇹
+        🇭🇹 <strong style="color:#004488;">Haiti Culture Connection</strong> 🇭🇹
     </p>
-    <p style="font-size:0.8rem; color:#666;">
+    <p style="font-size:0.8rem; color:#555;">
         Celebrating the rich culture, history, and people of Haiti.
     </p>
-    <p style="font-size:0.7rem; color:#555;">
+    <p style="font-size:0.7rem; color:#666;">
         © 2026 Haiti Culture Connection | Built with <span class="heart">❤️</span> in Haiti
     </p>
-    <p style="font-size:0.7rem; color:#555;">
+    <p style="font-size:0.7rem; color:#666;">
         📞 (509)-47385663 | 📧 deslandes78@gmail.com
     </p>
-    <p style="font-size:0.7rem; color:#555;">
+    <p style="font-size:0.7rem; color:#666;">
         #HaitiCulture #Haiti #Culture #History #Music #Art #Cuisine #Language #Festivals #HaitianPride #GlobalInternetpy
     </p>
 </div>
