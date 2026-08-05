@@ -1,6 +1,8 @@
 import streamlit as st
 from PIL import Image
 import re
+import base64
+from io import BytesIO
 
 # ---------- Page Config ----------
 st.set_page_config(
@@ -278,16 +280,16 @@ TEXTS = {
         "fr": "Haïti célèbre son indépendance de la France le 1er janvier. C'est une journée de fierté nationale, avec des défilés, des discours et la traditionnelle soupe joumou.",
         "es": "Haití celebra su independencia de Francia el 1 de enero. Es un día de orgullo nacional, con desfiles, discursos y la tradicional sopa joumou."
     },
-    # Media section
+    # Media section (updated with image upload)
     "media_title": {
         "en": "📺 Media Gallery",
         "fr": "📺 Galerie Médias",
         "es": "📺 Galería de Medios"
     },
     "media_subtitle": {
-        "en": "Add YouTube or Dropbox links to share with the community",
-        "fr": "Ajoutez des liens YouTube ou Dropbox à partager avec la communauté",
-        "es": "Agrega enlaces de YouTube o Dropbox para compartir con la comunidad"
+        "en": "Add images, YouTube videos, or Dropbox links to share with the community",
+        "fr": "Ajoutez des images, des vidéos YouTube ou des liens Dropbox à partager avec la communauté",
+        "es": "Agrega imágenes, videos de YouTube o enlaces de Dropbox para compartir con la comunidad"
     },
     "media_link_label": {
         "en": "Media Link (YouTube or Dropbox)",
@@ -300,14 +302,14 @@ TEXTS = {
         "es": "Leyenda"
     },
     "media_add_button": {
-        "en": "➕ Add Media",
-        "fr": "➕ Ajouter un média",
-        "es": "➕ Agregar medio"
+        "en": "➕ Add Link",
+        "fr": "➕ Ajouter un lien",
+        "es": "➕ Agregar enlace"
     },
     "media_empty": {
-        "en": "No media added yet. Use the form above to add a link.",
-        "fr": "Aucun média ajouté pour l'instant. Utilisez le formulaire ci-dessus pour ajouter un lien.",
-        "es": "No se han agregado medios aún. Use el formulario anterior para agregar un enlace."
+        "en": "No media added yet. Use the forms above to add images or links.",
+        "fr": "Aucun média ajouté pour l'instant. Utilisez les formulaires ci-dessus pour ajouter des images ou des liens.",
+        "es": "No se han agregado medios aún. Use los formularios anteriores para agregar imágenes o enlaces."
     },
     "media_remove": {
         "en": "❌ Remove",
@@ -323,14 +325,29 @@ TEXTS = {
         "en": "Dropbox Link",
         "fr": "Lien Dropbox",
         "es": "Enlace de Dropbox"
+    },
+    "media_image_upload": {
+        "en": "📸 Upload Image",
+        "fr": "📸 Télécharger une image",
+        "es": "📸 Subir imagen"
+    },
+    "media_image_caption": {
+        "en": "Image Caption",
+        "fr": "Légende de l'image",
+        "es": "Leyenda de la imagen"
+    },
+    "media_add_image": {
+        "en": "➕ Add Image",
+        "fr": "➕ Ajouter une image",
+        "es": "➕ Agregar imagen"
     }
 }
 
-# ---------- Helper function to get text ----------
+# ---------- Helper function ----------
 def get_text(key, lang):
     return TEXTS[key].get(lang, TEXTS[key]["en"])
 
-# ---------- Initialize session state ----------
+# ---------- Session state ----------
 if 'lang' not in st.session_state:
     st.session_state.lang = 'en'
 if 'media_items' not in st.session_state:
@@ -344,7 +361,6 @@ def set_language():
 
 # ---------- Sidebar ----------
 with st.sidebar:
-    # Language selector
     lang_choice = st.selectbox(
         "🌐 Language / Langue / Idioma",
         ["English", "Français", "Español"],
@@ -355,7 +371,7 @@ with st.sidebar:
         on_change=set_language
     )
     
-    lang = st.session_state.lang  # current language code
+    lang = st.session_state.lang
     
     st.markdown(f"### {get_text('nav_title', lang)}")
     
@@ -377,7 +393,6 @@ with st.sidebar:
         label_visibility="collapsed"
     )
     
-    # Map display name back to key
     nav_map = {
         get_text('nav_home', lang): "Home",
         get_text('nav_history', lang): "History",
@@ -512,6 +527,17 @@ st.markdown("""
     }
     .stCaption {
         color: #1a2b4c !important;
+    }
+    .media-item {
+        background: rgba(255, 255, 255, 0.7);
+        border-radius: 12px;
+        padding: 15px;
+        margin: 10px 0;
+        border: 1px solid rgba(0, 68, 170, 0.1);
+    }
+    .media-item img {
+        border-radius: 8px;
+        max-width: 100%;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -768,6 +794,7 @@ elif selected == "Festivals":
         </div>
         """, unsafe_allow_html=True)
 
+# ---------- MEDIA SECTION (UPDATED) ----------
 elif selected == "Media":
     st.markdown(f'<h2 class="section-title">{get_text("media_title", lang)}</h2>', unsafe_allow_html=True)
     st.markdown(f"""
@@ -776,44 +803,89 @@ elif selected == "Media":
         <p>{get_text("media_subtitle", lang)}</p>
     </div>
     """, unsafe_allow_html=True)
-    
-    # Form to add media
+
+    # ---- FORM 1: Add Image ----
     with st.container():
+        st.markdown(f"### {get_text('media_image_upload', lang)}")
         col1, col2 = st.columns([2, 1])
         with col1:
-            link = st.text_input(get_text("media_link_label", lang), key="media_link")
+            image_file = st.file_uploader("", type=["png", "jpg", "jpeg", "gif", "webp"], key="image_upload")
+        with col2:
+            image_caption = st.text_input(get_text("media_image_caption", lang), key="image_caption")
+        if st.button(get_text("media_add_image", lang), use_container_width=True):
+            if image_file is not None:
+                # Read image bytes
+                img_bytes = image_file.read()
+                st.session_state.media_items.append({
+                    "type": "image",
+                    "data": img_bytes,
+                    "caption": image_caption.strip(),
+                    "filename": image_file.name
+                })
+                st.success("✅ Image added!")
+                st.rerun()
+            else:
+                st.warning("Please upload an image file.")
+
+    st.markdown("---")
+
+    # ---- FORM 2: Add Link (YouTube or Dropbox) ----
+    with st.container():
+        st.markdown(f"### 🔗 {get_text('media_link_label', lang)}")
+        col1, col2 = st.columns([2, 1])
+        with col1:
+            link = st.text_input("", key="media_link")
         with col2:
             caption = st.text_input(get_text("media_caption_label", lang), key="media_caption")
-        
         if st.button(get_text("media_add_button", lang), use_container_width=True):
             if link.strip():
-                st.session_state.media_items.append({"link": link.strip(), "caption": caption.strip()})
-                st.success("✅ Media added!")
+                st.session_state.media_items.append({
+                    "type": "link",
+                    "link": link.strip(),
+                    "caption": caption.strip()
+                })
+                st.success("✅ Link added!")
                 st.rerun()
             else:
                 st.warning("Please enter a link.")
-    
-    # Display media items
+
+    st.markdown("---")
+
+    # ---- Display Media Items ----
     if st.session_state.media_items:
         for idx, item in enumerate(st.session_state.media_items):
             with st.container():
-                st.markdown(f"**{item['caption'] if item['caption'] else get_text('media_youtube', lang)}**")
-                # Detect if it's a YouTube link
-                if "youtube.com" in item['link'] or "youtu.be" in item['link']:
-                    # Try to extract video ID
-                    vid_match = re.search(r"(?:v=|\/)([0-9A-Za-z_-]{11})(?:[&?]|$)", item['link'])
-                    if vid_match:
-                        vid = vid_match.group(1)
-                        st.markdown(f'<iframe width="100%" height="315" src="https://www.youtube.com/embed/{vid}" frameborder="0" allowfullscreen></iframe>', unsafe_allow_html=True)
+                st.markdown(f'<div class="media-item">', unsafe_allow_html=True)
+                if item["type"] == "image":
+                    # Display image with caption
+                    try:
+                        img = Image.open(BytesIO(item["data"]))
+                        st.image(img, caption=item["caption"], use_column_width=True)
+                    except Exception as e:
+                        st.error(f"Error displaying image: {e}")
+                elif item["type"] == "link":
+                    # Show caption as title
+                    st.markdown(f"**{item['caption'] if item['caption'] else get_text('media_youtube', lang)}**")
+                    # Detect YouTube
+                    if "youtube.com" in item['link'] or "youtu.be" in item['link']:
+                        vid_match = re.search(r"(?:v=|\/)([0-9A-Za-z_-]{11})(?:[&?]|$)", item['link'])
+                        if vid_match:
+                            vid = vid_match.group(1)
+                            st.markdown(f'<iframe width="100%" height="315" src="https://www.youtube.com/embed/{vid}" frameborder="0" allowfullscreen></iframe>', unsafe_allow_html=True)
+                        else:
+                            st.markdown(f'<a href="{item["link"]}" target="_blank">{item["link"]}</a>', unsafe_allow_html=True)
                     else:
+                        # Regular link
                         st.markdown(f'<a href="{item["link"]}" target="_blank">{item["link"]}</a>', unsafe_allow_html=True)
                 else:
-                    # Dropbox or other - just show link
-                    st.markdown(f'<a href="{item["link"]}" target="_blank">{item["link"]}</a>', unsafe_allow_html=True)
+                    st.warning("Unknown media type.")
                 
-                if st.button(f"{get_text('media_remove', lang)} {idx}", key=f"remove_{idx}"):
+                # Remove button
+                if st.button(f"{get_text('media_remove', lang)} {idx+1}", key=f"remove_{idx}"):
                     del st.session_state.media_items[idx]
                     st.rerun()
+                
+                st.markdown('</div>', unsafe_allow_html=True)
                 st.markdown("---")
     else:
         st.info(get_text("media_empty", lang))
