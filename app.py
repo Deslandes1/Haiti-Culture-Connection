@@ -155,6 +155,12 @@ TEXTS = {
     "play_voice_label": {"en": "🔊 Listen to About HCC (AI Female Voice)", "fr": "🔊 Écouter À propos de HCC (Voix féminine IA)", "es": "🔊 Escuchar Acerca de HCC (Voz femenina IA)"}
 }
 
+# ---------- Logo Generation Prompt (for reference) ----------
+LOGO_PROMPT = """Based on the logo in image_0.png, the central 3D 'HC' letterforms (large blue 'H' and stacked yellow/red 'C'), along with the enclosing pink circle and the green network node-lines, are rendered as a single, complex, metallic object. This entire object is captured mid-spin on a clean white background, with a slow, deliberate rotational blur effect applied to the outer circle and letters to indicate motion. The surfaces of the letters and the metal of the circle are highly polished, catching intense, brilliant specular highlights and multi-colored light flares, creating a spectacular 'shining' effect across all surfaces. Starburst glints are visible at several points along the circle and on the letter edges. A complex, multi-directional motion trail or 'ghost' effect follows the spinning object, composed of slightly desaturated, translucent copies of the logo trailing behind it. Below the spinning logo, the text "HAITI CULTURE CONNECTION" is rendered in its original red font and placement, but with a subtle, rippling distortion and a soft, moving light-sweep passing over it, giving it an illuminated and fluid appearance. The entire scene has depth, with the logo appearing to float.
+
+How to use this prompt:
+Copy and paste the text above into your preferred image generation tool (like Midjourney, DALL-E 3, or Stable Diffusion). If using DALL-E 3, you can just provide the image and this prompt directly. For Midjourney, you will need to use the --v 6.0 flag or later. The prompt is designed to interpret the elements from the original image into a dynamic, high-production-value graphic."""
+
 # ---------- Helper function ----------
 def get_text(key, lang):
     return TEXTS[key].get(lang, TEXTS[key]["en"])
@@ -971,6 +977,18 @@ def about_content():
         </p>
     </div>
     """, unsafe_allow_html=True)
+
+    # ---------- New: Logo Design Prompt Section ----------
+    st.markdown("---")
+    st.markdown("""
+    <div class="culture-card">
+        <h3>🎨 Logo Design</h3>
+        <p>Below is the exact prompt used to generate the HCC logo. You can copy it into any AI image generation tool (Midjourney, DALL‑E 3, Stable Diffusion, etc.) to recreate a high‑fidelity version of the logo. Once generated, upload the image via the <strong>Owner Panel</strong> to replace the animated CSS logo.</p>
+    </div>
+    """, unsafe_allow_html=True)
+    with st.expander("📋 View / Copy Logo Prompt", expanded=False):
+        st.code(LOGO_PROMPT, language="markdown")
+        st.caption("💡 Tip: For Midjourney, append `--v 6.0` to the prompt.")
 
 # ---------- Render sections ----------
 if st.session_state.selected_section is None:
