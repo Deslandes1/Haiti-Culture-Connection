@@ -450,7 +450,7 @@ TEXTS = {
         "fr": "➕ Ajouter un lien",
         "es": "➕ Agregar enlace"
     },
-    # New: Manage Media
+    # Manage Media
     "manage_media_title": {
         "en": "📋 Manage Media",
         "fr": "📋 Gérer les médias",
@@ -511,11 +511,12 @@ if 'show_owner_panel' not in st.session_state:
 if 'selected_section' not in st.session_state:
     st.session_state.selected_section = None
 if 'editing_index' not in st.session_state:
-    st.session_state.editing_index = None  # index of item being edited
+    st.session_state.editing_index = None
 
 # ---------- Language selection ----------
 def set_language():
-    st.session_state.lang = LANGUAGES[st.session_state.lang_selector]
+    # Use the correct widget key
+    st.session_state.lang = LANGUAGES[st.session_state.lang_selector_top]
 
 # ---------- Menu selection callback ----------
 def on_menu_change():
@@ -1004,20 +1005,17 @@ if st.session_state.show_owner_panel:
                 for idx, item in enumerate(st.session_state.media_items):
                     with st.container():
                         st.markdown(f'<div class="management-item">', unsafe_allow_html=True)
-                        # Show current content
                         if item["type"] == "image":
                             try:
                                 img = Image.open(BytesIO(item["data"]))
                                 st.image(img, caption=item["caption"], use_column_width=True)
                             except:
                                 st.warning("Image cannot be displayed")
-                        else:  # link
+                        else:
                             st.markdown(f"**{item['caption'] if item['caption'] else 'Link'}**")
                             st.markdown(f'<a href="{item["link"]}" target="_blank">{item["link"]}</a>', unsafe_allow_html=True)
                         
-                        # If we are editing this item, show edit form
                         if st.session_state.editing_index == idx:
-                            # Edit form
                             if item["type"] == "image":
                                 new_caption = st.text_input(get_text('edit_caption_label', lang), value=item["caption"], key=f"edit_caption_{idx}")
                                 col_save, col_cancel = st.columns(2)
@@ -1030,7 +1028,7 @@ if st.session_state.show_owner_panel:
                                     if st.button(get_text('cancel_label', lang), key=f"cancel_{idx}"):
                                         st.session_state.editing_index = None
                                         st.rerun()
-                            else:  # link
+                            else:
                                 new_caption = st.text_input(get_text('edit_caption_label', lang), value=item["caption"], key=f"edit_caption_link_{idx}")
                                 new_link = st.text_input(get_text('edit_link_label', lang), value=item["link"], key=f"edit_link_{idx}")
                                 col_save, col_cancel = st.columns(2)
@@ -1045,7 +1043,6 @@ if st.session_state.show_owner_panel:
                                         st.session_state.editing_index = None
                                         st.rerun()
                         else:
-                            # Show edit and delete buttons
                             col1, col2 = st.columns(2)
                             with col1:
                                 if st.button(get_text('edit_label', lang), key=f"edit_btn_{idx}"):
