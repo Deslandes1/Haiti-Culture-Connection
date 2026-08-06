@@ -163,7 +163,8 @@ Copy and paste the text above into your preferred image generation tool (like Mi
 
 # ---------- Helper function ----------
 def get_text(key, lang):
-    return TEXTS[key].get(lang, TEXTS[key]["en"])
+    # Safely get translation; fallback to "en" if available, else empty string
+    return TEXTS[key].get(lang, TEXTS[key].get("en", ""))
 
 # ---------- Session state ----------
 if 'lang' not in st.session_state:
