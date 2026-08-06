@@ -449,6 +449,47 @@ TEXTS = {
         "en": "➕ Add Link",
         "fr": "➕ Ajouter un lien",
         "es": "➕ Agregar enlace"
+    },
+    # New: Manage Media
+    "manage_media_title": {
+        "en": "📋 Manage Media",
+        "fr": "📋 Gérer les médias",
+        "es": "📋 Gestionar medios"
+    },
+    "edit_label": {
+        "en": "✏️ Edit",
+        "fr": "✏️ Modifier",
+        "es": "✏️ Editar"
+    },
+    "delete_label": {
+        "en": "🗑️ Delete",
+        "fr": "🗑️ Supprimer",
+        "es": "🗑️ Eliminar"
+    },
+    "save_label": {
+        "en": "💾 Save",
+        "fr": "💾 Enregistrer",
+        "es": "💾 Guardar"
+    },
+    "cancel_label": {
+        "en": "❌ Cancel",
+        "fr": "❌ Annuler",
+        "es": "❌ Cancelar"
+    },
+    "edit_caption_label": {
+        "en": "New Caption",
+        "fr": "Nouvelle légende",
+        "es": "Nueva leyenda"
+    },
+    "edit_link_label": {
+        "en": "New Link",
+        "fr": "Nouveau lien",
+        "es": "Nuevo enlace"
+    },
+    "no_media_to_manage": {
+        "en": "No media to manage.",
+        "fr": "Aucun média à gérer.",
+        "es": "No hay medios para gestionar."
     }
 }
 
@@ -469,6 +510,8 @@ if 'show_owner_panel' not in st.session_state:
     st.session_state.show_owner_panel = False
 if 'selected_section' not in st.session_state:
     st.session_state.selected_section = None
+if 'editing_index' not in st.session_state:
+    st.session_state.editing_index = None  # index of item being edited
 
 # ---------- Language selection ----------
 def set_language():
@@ -477,7 +520,6 @@ def set_language():
 # ---------- Menu selection callback ----------
 def on_menu_change():
     selected = st.session_state.menu_select
-    # Map display names to section keys
     menu_map = {
         get_text('nav_dashboard', st.session_state.lang): None,
         get_text('nav_home', st.session_state.lang): "home",
@@ -784,6 +826,13 @@ st.markdown("""
         margin: 20px 0;
         text-align: center;
     }
+    .management-item {
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 10px;
+        padding: 15px;
+        margin: 10px 0;
+        border: 1px solid rgba(0, 68, 170, 0.1);
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -792,7 +841,6 @@ lang = st.session_state.lang
 
 col1, col2, col3 = st.columns([1, 2, 1])
 with col1:
-    # Animated Logo (CSS-based)
     st.markdown("""
     <div class="logo-container">
         <div class="logo-emblem">
@@ -818,10 +866,7 @@ with col1:
     """, unsafe_allow_html=True)
 
 with col3:
-    # Right side: language selector + menu dropdown + owner toggle
     st.markdown('<div style="display:flex; justify-content:flex-end; align-items:center; gap:10px; padding-top:10px; flex-wrap:wrap;">', unsafe_allow_html=True)
-    
-    # ---- Language selector ----
     lang_choice = st.selectbox(
         "🌐 Language",
         ["English", "Français", "Español"],
@@ -832,8 +877,6 @@ with col3:
         on_change=set_language,
         label_visibility="collapsed"
     )
-    
-    # ---- Menu dropdown ----
     menu_items = [
         get_text('nav_dashboard', lang),
         get_text('nav_home', lang),
@@ -846,7 +889,6 @@ with col3:
         get_text('nav_media', lang),
         get_text('nav_about', lang)
     ]
-    # Determine the current index to show correctly
     current_display = get_text('nav_dashboard', lang)
     if st.session_state.selected_section == "home":
         current_display = get_text('nav_home', lang)
@@ -866,8 +908,6 @@ with col3:
         current_display = get_text('nav_media', lang)
     elif st.session_state.selected_section == "about":
         current_display = get_text('nav_about', lang)
-    
-    # Use a selectbox that updates session state on change
     selected_menu = st.selectbox(
         get_text('menu_label', lang),
         menu_items,
@@ -876,15 +916,12 @@ with col3:
         label_visibility="collapsed",
         on_change=on_menu_change
     )
-    
-    # ---- Owner toggle button ----
     if st.button(get_text('owner_toggle_button', lang), key="owner_toggle_btn", use_container_width=False):
         st.session_state.show_owner_panel = not st.session_state.show_owner_panel
         st.rerun()
-    
     st.markdown('</div>', unsafe_allow_html=True)
 
-# ---------- Owner Panel (collapsible) ----------
+# ---------- Owner Panel ----------
 if st.session_state.show_owner_panel:
     with st.container():
         st.markdown('<div class="owner-panel">', unsafe_allow_html=True)
@@ -956,19 +993,81 @@ if st.session_state.show_owner_panel:
                     st.rerun()
                 else:
                     st.warning("Please enter a link.")
+
+            st.markdown("---")
+
+            # ---- Manage Media ----
+            st.markdown(f"### {get_text('manage_media_title', lang)}")
+            if not st.session_state.media_items:
+                st.info(get_text('no_media_to_manage', lang))
+            else:
+                for idx, item in enumerate(st.session_state.media_items):
+                    with st.container():
+                        st.markdown(f'<div class="management-item">', unsafe_allow_html=True)
+                        # Show current content
+                        if item["type"] == "image":
+                            try:
+                                img = Image.open(BytesIO(item["data"]))
+                                st.image(img, caption=item["caption"], use_column_width=True)
+                            except:
+                                st.warning("Image cannot be displayed")
+                        else:  # link
+                            st.markdown(f"**{item['caption'] if item['caption'] else 'Link'}**")
+                            st.markdown(f'<a href="{item["link"]}" target="_blank">{item["link"]}</a>', unsafe_allow_html=True)
+                        
+                        # If we are editing this item, show edit form
+                        if st.session_state.editing_index == idx:
+                            # Edit form
+                            if item["type"] == "image":
+                                new_caption = st.text_input(get_text('edit_caption_label', lang), value=item["caption"], key=f"edit_caption_{idx}")
+                                col_save, col_cancel = st.columns(2)
+                                with col_save:
+                                    if st.button(get_text('save_label', lang), key=f"save_{idx}"):
+                                        st.session_state.media_items[idx]["caption"] = new_caption
+                                        st.session_state.editing_index = None
+                                        st.rerun()
+                                with col_cancel:
+                                    if st.button(get_text('cancel_label', lang), key=f"cancel_{idx}"):
+                                        st.session_state.editing_index = None
+                                        st.rerun()
+                            else:  # link
+                                new_caption = st.text_input(get_text('edit_caption_label', lang), value=item["caption"], key=f"edit_caption_link_{idx}")
+                                new_link = st.text_input(get_text('edit_link_label', lang), value=item["link"], key=f"edit_link_{idx}")
+                                col_save, col_cancel = st.columns(2)
+                                with col_save:
+                                    if st.button(get_text('save_label', lang), key=f"save_link_{idx}"):
+                                        st.session_state.media_items[idx]["caption"] = new_caption
+                                        st.session_state.media_items[idx]["link"] = new_link
+                                        st.session_state.editing_index = None
+                                        st.rerun()
+                                with col_cancel:
+                                    if st.button(get_text('cancel_label', lang), key=f"cancel_link_{idx}"):
+                                        st.session_state.editing_index = None
+                                        st.rerun()
+                        else:
+                            # Show edit and delete buttons
+                            col1, col2 = st.columns(2)
+                            with col1:
+                                if st.button(get_text('edit_label', lang), key=f"edit_btn_{idx}"):
+                                    st.session_state.editing_index = idx
+                                    st.rerun()
+                            with col2:
+                                if st.button(get_text('delete_label', lang), key=f"del_btn_{idx}"):
+                                    del st.session_state.media_items[idx]
+                                    if st.session_state.editing_index == idx:
+                                        st.session_state.editing_index = None
+                                    st.rerun()
+                        st.markdown('</div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
 # ---------- Main Content: Welcome Banner ----------
 st.markdown(f'<div class="welcome-banner">🏠 {get_text("welcome_banner", lang)}</div>', unsafe_allow_html=True)
-
-# ---------- Dashboard ----------
 st.markdown(f'<h1 style="text-align:center; color:#004488; font-size:2.5rem; margin-top:0;">{get_text("dashboard_title", lang)}</h1>', unsafe_allow_html=True)
 st.markdown(f'<p class="dashboard-intro">✨ {get_text("sub_title", lang)} ✨</p>', unsafe_allow_html=True)
 
-# Function to render a section
+# ---------- Section render functions (unchanged) ----------
 def render_section(section_key, title_key, content_func):
     if st.session_state.selected_section is None or st.session_state.selected_section == section_key:
-        # If we are in a specific section, add a back button at the top
         if st.session_state.selected_section == section_key:
             st.markdown('<div class="back-btn-container">', unsafe_allow_html=True)
             if st.button(get_text('back_to_dashboard', lang), key=f"back_{section_key}"):
@@ -977,7 +1076,6 @@ def render_section(section_key, title_key, content_func):
             st.markdown('</div>', unsafe_allow_html=True)
         content_func()
 
-# Define content functions for each section
 def home_content():
     st.markdown(f'<h2 id="home" class="section-title">{get_text("home_title", lang)}</h2>', unsafe_allow_html=True)
     col1, col2 = st.columns([2, 1])
@@ -1219,7 +1317,6 @@ def media_content():
         <p>{get_text("media_subtitle", lang)}</p>
     </div>
     """, unsafe_allow_html=True)
-    # Display media items (gallery)
     if st.session_state.media_items:
         for idx, item in enumerate(st.session_state.media_items):
             with st.container():
@@ -1228,9 +1325,9 @@ def media_content():
                     try:
                         img = Image.open(BytesIO(item["data"]))
                         st.image(img, caption=item["caption"], use_column_width=True)
-                    except Exception as e:
-                        st.error(f"Error displaying image: {e}")
-                elif item["type"] == "link":
+                    except:
+                        st.warning("Image cannot be displayed")
+                else:
                     st.markdown(f"**{item['caption'] if item['caption'] else get_text('media_youtube', lang)}**")
                     if "youtube.com" in item['link'] or "youtu.be" in item['link']:
                         vid_match = re.search(r"(?:v=|\/)([0-9A-Za-z_-]{11})(?:[&?]|$)", item['link'])
@@ -1241,15 +1338,10 @@ def media_content():
                             st.markdown(f'<a href="{item["link"]}" target="_blank">{item["link"]}</a>', unsafe_allow_html=True)
                     else:
                         st.markdown(f'<a href="{item["link"]}" target="_blank">{item["link"]}</a>', unsafe_allow_html=True)
-                else:
-                    st.warning("Unknown media type.")
-                
-                # Show remove button only if logged in
                 if st.session_state.media_authenticated:
                     if st.button(f"{get_text('media_remove', lang)} {idx+1}", key=f"remove_{idx}_dash"):
                         del st.session_state.media_items[idx]
                         st.rerun()
-                
                 st.markdown('</div>', unsafe_allow_html=True)
                 st.markdown("---")
     else:
@@ -1294,8 +1386,7 @@ def about_content():
     </div>
     """, unsafe_allow_html=True)
 
-# Render sections based on selection
-# If no specific section, show all
+# ---------- Render dashboard sections ----------
 if st.session_state.selected_section is None:
     render_section("home", "home_title", home_content)
     render_section("history", "history_title", history_content)
@@ -1307,7 +1398,6 @@ if st.session_state.selected_section is None:
     render_section("media", "media_title", media_content)
     render_section("about", "about_title", about_content)
 else:
-    # Only show the selected section
     if st.session_state.selected_section == "home":
         render_section("home", "home_title", home_content)
     elif st.session_state.selected_section == "history":
