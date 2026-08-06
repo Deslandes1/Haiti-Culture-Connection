@@ -22,6 +22,7 @@ LANGUAGES = {
 # Translation dictionary for all UI text
 TEXTS = {
     # Navigation (Dashboard sections) – used also for menu
+    "nav_dashboard": {"en": "📊 Dashboard", "fr": "📊 Tableau de bord", "es": "📊 Panel de control"},
     "nav_home": {"en": "🏠 Home", "fr": "🏠 Accueil", "es": "🏠 Inicio"},
     "nav_history": {"en": "📜 History", "fr": "📜 Histoire", "es": "📜 Historia"},
     "nav_music": {"en": "🎵 Music", "fr": "🎵 Musique", "es": "🎵 Música"},
@@ -39,6 +40,11 @@ TEXTS = {
         "en": "📋 Menu",
         "fr": "📋 Menu",
         "es": "📋 Menú"
+    },
+    "back_to_dashboard": {
+        "en": "⬅ Back to Dashboard",
+        "fr": "⬅ Retour au tableau de bord",
+        "es": "⬅ Volver al panel"
     },
     "footer_copyright": {
         "en": "© 2026 Haiti Culture Connection | Built with ❤️ in Haiti",
@@ -461,17 +467,30 @@ if 'media_authenticated' not in st.session_state:
     st.session_state.media_authenticated = False
 if 'show_owner_panel' not in st.session_state:
     st.session_state.show_owner_panel = False
-if 'menu_selection' not in st.session_state:
-    st.session_state.menu_selection = None
+if 'selected_section' not in st.session_state:
+    st.session_state.selected_section = None
 
 # ---------- Language selection ----------
 def set_language():
     st.session_state.lang = LANGUAGES[st.session_state.lang_selector]
 
 # ---------- Menu selection callback ----------
-def menu_scroll():
-    # We'll just store the selection and then use JavaScript to scroll
-    pass
+def on_menu_change():
+    selected = st.session_state.menu_select
+    # Map display names to section keys
+    menu_map = {
+        get_text('nav_dashboard', st.session_state.lang): None,
+        get_text('nav_home', st.session_state.lang): "home",
+        get_text('nav_history', st.session_state.lang): "history",
+        get_text('nav_music', st.session_state.lang): "music",
+        get_text('nav_art', st.session_state.lang): "art",
+        get_text('nav_cuisine', st.session_state.lang): "cuisine",
+        get_text('nav_language', st.session_state.lang): "language",
+        get_text('nav_festivals', st.session_state.lang): "festivals",
+        get_text('nav_media', st.session_state.lang): "media",
+        get_text('nav_about', st.session_state.lang): "about"
+    }
+    st.session_state.selected_section = menu_map.get(selected, None)
 
 # ---------- CSS (Light Blue Theme + Animated Logo) ----------
 st.markdown("""
@@ -761,6 +780,10 @@ st.markdown("""
         margin-bottom: 5px;
         letter-spacing: 2px;
     }
+    .back-btn-container {
+        margin: 20px 0;
+        text-align: center;
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -812,6 +835,7 @@ with col3:
     
     # ---- Menu dropdown ----
     menu_items = [
+        get_text('nav_dashboard', lang),
         get_text('nav_home', lang),
         get_text('nav_history', lang),
         get_text('nav_music', lang),
@@ -822,35 +846,36 @@ with col3:
         get_text('nav_media', lang),
         get_text('nav_about', lang)
     ]
-    # Map the selected item to an anchor id
-    anchor_map = {
-        get_text('nav_home', lang): "home",
-        get_text('nav_history', lang): "history",
-        get_text('nav_music', lang): "music",
-        get_text('nav_art', lang): "art",
-        get_text('nav_cuisine', lang): "cuisine",
-        get_text('nav_language', lang): "language",
-        get_text('nav_festivals', lang): "festivals",
-        get_text('nav_media', lang): "media",
-        get_text('nav_about', lang): "about"
-    }
+    # Determine the current index to show correctly
+    current_display = get_text('nav_dashboard', lang)
+    if st.session_state.selected_section == "home":
+        current_display = get_text('nav_home', lang)
+    elif st.session_state.selected_section == "history":
+        current_display = get_text('nav_history', lang)
+    elif st.session_state.selected_section == "music":
+        current_display = get_text('nav_music', lang)
+    elif st.session_state.selected_section == "art":
+        current_display = get_text('nav_art', lang)
+    elif st.session_state.selected_section == "cuisine":
+        current_display = get_text('nav_cuisine', lang)
+    elif st.session_state.selected_section == "language":
+        current_display = get_text('nav_language', lang)
+    elif st.session_state.selected_section == "festivals":
+        current_display = get_text('nav_festivals', lang)
+    elif st.session_state.selected_section == "media":
+        current_display = get_text('nav_media', lang)
+    elif st.session_state.selected_section == "about":
+        current_display = get_text('nav_about', lang)
+    
+    # Use a selectbox that updates session state on change
     selected_menu = st.selectbox(
         get_text('menu_label', lang),
         menu_items,
-        index=0,
+        index=menu_items.index(current_display) if current_display in menu_items else 0,
         key="menu_select",
-        label_visibility="collapsed"
+        label_visibility="collapsed",
+        on_change=on_menu_change
     )
-    # If selection changed, we scroll using JavaScript
-    if selected_menu:
-        anchor = anchor_map.get(selected_menu)
-        if anchor:
-            # Use st.markdown to inject a small JS snippet that scrolls to the element
-            st.markdown(f"""
-                <script>
-                    document.getElementById('{anchor}').scrollIntoView({{behavior: 'smooth'}});
-                </script>
-            """, unsafe_allow_html=True)
     
     # ---- Owner toggle button ----
     if st.button(get_text('owner_toggle_button', lang), key="owner_toggle_btn", use_container_width=False):
@@ -940,352 +965,367 @@ st.markdown(f'<div class="welcome-banner">🏠 {get_text("welcome_banner", lang)
 st.markdown(f'<h1 style="text-align:center; color:#004488; font-size:2.5rem; margin-top:0;">{get_text("dashboard_title", lang)}</h1>', unsafe_allow_html=True)
 st.markdown(f'<p class="dashboard-intro">✨ {get_text("sub_title", lang)} ✨</p>', unsafe_allow_html=True)
 
-# ================================
-# SECTION 1: HOME (with id="home")
-# ================================
-st.markdown(f'<h2 id="home" class="section-title">{get_text("home_title", lang)}</h2>', unsafe_allow_html=True)
+# Function to render a section
+def render_section(section_key, title_key, content_func):
+    if st.session_state.selected_section is None or st.session_state.selected_section == section_key:
+        # If we are in a specific section, add a back button at the top
+        if st.session_state.selected_section == section_key:
+            st.markdown('<div class="back-btn-container">', unsafe_allow_html=True)
+            if st.button(get_text('back_to_dashboard', lang), key=f"back_{section_key}"):
+                st.session_state.selected_section = None
+                st.rerun()
+            st.markdown('</div>', unsafe_allow_html=True)
+        content_func()
 
-col1, col2 = st.columns([2, 1])
-with col1:
+# Define content functions for each section
+def home_content():
+    st.markdown(f'<h2 id="home" class="section-title">{get_text("home_title", lang)}</h2>', unsafe_allow_html=True)
+    col1, col2 = st.columns([2, 1])
+    with col1:
+        st.markdown(f"""
+        <div class="culture-card">
+            <h3>🇭🇹 {get_text("home_title", lang)}</h3>
+            <p>{get_text("home_intro", lang)}</p>
+            <p>
+                <strong style="color:#004488;">{get_text("home_explore", lang)}</strong><br>
+                📜 {get_text("nav_history", lang)} – {get_text("history_intro", lang).split('.')[0]}<br>
+                🎵 {get_text("nav_music", lang)} – {get_text("music_intro", lang).split('.')[0]}<br>
+                🎨 {get_text("nav_art", lang)} – {get_text("art_intro", lang).split('.')[0]}<br>
+                🍲 {get_text("nav_cuisine", lang)} – {get_text("cuisine_intro", lang).split('.')[0]}<br>
+                🗣️ {get_text("nav_language", lang)} – {get_text("lang_intro", lang).split('.')[0]}<br>
+                🎉 {get_text("nav_festivals", lang)} – {get_text("fest_intro", lang).split('.')[0]}
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+    with col2:
+        st.markdown(f"""
+        <div class="culture-card" style="text-align:center;">
+            <h3>{get_text("home_facts", lang)}</h3>
+            <p style="font-size:0.95rem;">
+                <strong style="color:#004488;">{get_text("home_capital", lang)}</strong> Port-au-Prince<br>
+                <strong style="color:#004488;">{get_text("home_population", lang)}</strong> 11.4 million<br>
+                <strong style="color:#004488;">{get_text("home_languages", lang)}</strong> French, Haitian Creole<br>
+                <strong style="color:#004488;">{get_text("home_currency", lang)}</strong> Gourde (HTG)<br>
+                <strong style="color:#004488;">{get_text("home_independence", lang)}</strong> January 1, 1804
+            </p>
+            <p style="font-size:1.5rem; margin-top:10px;">
+                🇭🇹❤️💙
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+
+def history_content():
+    st.markdown(f'<h2 id="history" class="section-title">{get_text("history_title", lang)}</h2>', unsafe_allow_html=True)
     st.markdown(f"""
     <div class="culture-card">
-        <h3>🇭🇹 {get_text("home_title", lang)}</h3>
-        <p>{get_text("home_intro", lang)}</p>
+        <h3>🇭🇹 {get_text("history_title", lang)}</h3>
+        <p>{get_text("history_intro", lang)}</p>
+        <p>{get_text("history_more", lang)}</p>
         <p>
-            <strong style="color:#004488;">{get_text("home_explore", lang)}</strong><br>
-            📜 {get_text("nav_history", lang)} – {get_text("history_intro", lang).split('.')[0]}<br>
-            🎵 {get_text("nav_music", lang)} – {get_text("music_intro", lang).split('.')[0]}<br>
-            🎨 {get_text("nav_art", lang)} – {get_text("art_intro", lang).split('.')[0]}<br>
-            🍲 {get_text("nav_cuisine", lang)} – {get_text("cuisine_intro", lang).split('.')[0]}<br>
-            🗣️ {get_text("nav_language", lang)} – {get_text("lang_intro", lang).split('.')[0]}<br>
-            🎉 {get_text("nav_festivals", lang)} – {get_text("fest_intro", lang).split('.')[0]}
+            <strong style="color:#004488;">{get_text("history_sites", lang)}</strong><br>
+            {get_text("history_site1", lang)}<br>
+            {get_text("history_site2", lang)}<br>
+            {get_text("history_site3", lang)}
         </p>
     </div>
     """, unsafe_allow_html=True)
 
-with col2:
+def music_content():
+    st.markdown(f'<h2 id="music" class="section-title">{get_text("music_title", lang)}</h2>', unsafe_allow_html=True)
     st.markdown(f"""
-    <div class="culture-card" style="text-align:center;">
-        <h3>{get_text("home_facts", lang)}</h3>
-        <p style="font-size:0.95rem;">
-            <strong style="color:#004488;">{get_text("home_capital", lang)}</strong> Port-au-Prince<br>
-            <strong style="color:#004488;">{get_text("home_population", lang)}</strong> 11.4 million<br>
-            <strong style="color:#004488;">{get_text("home_languages", lang)}</strong> French, Haitian Creole<br>
-            <strong style="color:#004488;">{get_text("home_currency", lang)}</strong> Gourde (HTG)<br>
-            <strong style="color:#004488;">{get_text("home_independence", lang)}</strong> January 1, 1804
-        </p>
-        <p style="font-size:1.5rem; margin-top:10px;">
-            🇭🇹❤️💙
-        </p>
+    <div class="culture-card">
+        <h3>🎶 {get_text("music_title", lang)}</h3>
+        <p>{get_text("music_intro", lang)}</p>
+    </div>
+    """, unsafe_allow_html=True)
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown(f"""
+        <div class="culture-card">
+            <h4>{get_text("music_compas", lang)}</h4>
+            <p>{get_text("music_compas_desc", lang)}</p>
+            <p><strong style="color:#004488;">{get_text("music_artists", lang)}</strong> Tabou Combo, Coupé Cloué, Jean Baptiste</p>
+        </div>
+        """, unsafe_allow_html=True)
+        st.markdown(f"""
+        <div class="culture-card">
+            <h4>{get_text("music_rara", lang)}</h4>
+            <p>{get_text("music_rara_desc", lang)}</p>
+        </div>
+        """, unsafe_allow_html=True)
+    with col2:
+        st.markdown(f"""
+        <div class="culture-card">
+            <h4>{get_text("music_meringue", lang)}</h4>
+            <p>{get_text("music_meringue_desc", lang)}</p>
+        </div>
+        """, unsafe_allow_html=True)
+        st.markdown(f"""
+        <div class="culture-card">
+            <h4>{get_text("music_vodou", lang)}</h4>
+            <p>{get_text("music_vodou_desc", lang)}</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+def art_content():
+    st.markdown(f'<h2 id="art" class="section-title">{get_text("art_title", lang)}</h2>', unsafe_allow_html=True)
+    st.markdown(f"""
+    <div class="culture-card">
+        <h3>🎨 {get_text("art_title", lang)}</h3>
+        <p>{get_text("art_intro", lang)}</p>
+    </div>
+    """, unsafe_allow_html=True)
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.markdown(f"""
+        <div class="culture-card">
+            <h4>{get_text("art_naive", lang)}</h4>
+            <p>{get_text("art_naive_desc", lang)}</p>
+        </div>
+        """, unsafe_allow_html=True)
+    with col2:
+        st.markdown(f"""
+        <div class="culture-card">
+            <h4>{get_text("art_sculpture", lang)}</h4>
+            <p>{get_text("art_sculpture_desc", lang)}</p>
+        </div>
+        """, unsafe_allow_html=True)
+    with col3:
+        st.markdown(f"""
+        <div class="culture-card">
+            <h4>{get_text("art_vodou_flags", lang)}</h4>
+            <p>{get_text("art_vodou_flags_desc", lang)}</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+def cuisine_content():
+    st.markdown(f'<h2 id="cuisine" class="section-title">{get_text("cuisine_title", lang)}</h2>', unsafe_allow_html=True)
+    st.markdown(f"""
+    <div class="culture-card">
+        <h3>🇭🇹 {get_text("cuisine_title", lang)}</h3>
+        <p>{get_text("cuisine_intro", lang)}</p>
+    </div>
+    """, unsafe_allow_html=True)
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown(f"""
+        <div class="culture-card">
+            <h4>{get_text("cuisine_griot", lang)}</h4>
+            <p>{get_text("cuisine_griot_desc", lang)}</p>
+        </div>
+        """, unsafe_allow_html=True)
+        st.markdown(f"""
+        <div class="culture-card">
+            <h4>{get_text("cuisine_soup", lang)}</h4>
+            <p>{get_text("cuisine_soup_desc", lang)}</p>
+        </div>
+        """, unsafe_allow_html=True)
+    with col2:
+        st.markdown(f"""
+        <div class="culture-card">
+            <h4>{get_text("cuisine_poulet", lang)}</h4>
+            <p>{get_text("cuisine_poulet_desc", lang)}</p>
+        </div>
+        """, unsafe_allow_html=True)
+        st.markdown(f"""
+        <div class="culture-card">
+            <h4>{get_text("cuisine_acassan", lang)}</h4>
+            <p>{get_text("cuisine_acassan_desc", lang)}</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+def language_content():
+    st.markdown(f'<h2 id="language" class="section-title">{get_text("lang_title", lang)}</h2>', unsafe_allow_html=True)
+    st.markdown(f"""
+    <div class="culture-card">
+        <h3>🇭🇹 {get_text("lang_title", lang)}</h3>
+        <p>{get_text("lang_intro", lang)}</p>
+    </div>
+    """, unsafe_allow_html=True)
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown(f"""
+        <div class="culture-card">
+            <h4>{get_text("lang_french", lang)}</h4>
+            <p>{get_text("lang_french_desc", lang)}</p>
+            <p><strong style="color:#004488;">{get_text("lang_french_example", lang)}</strong> "Bonjour, comment allez-vous?"</p>
+        </div>
+        """, unsafe_allow_html=True)
+    with col2:
+        st.markdown(f"""
+        <div class="culture-card">
+            <h4>{get_text("lang_creole", lang)}</h4>
+            <p>{get_text("lang_creole_desc", lang)}</p>
+            <p><strong style="color:#004488;">{get_text("lang_french_example", lang)}</strong> "Bonjou, kijan ou ye?"</p>
+            <p style="font-size:0.8rem; color:#555;">{get_text("lang_french_example", lang).replace("Example:", "").strip()}: Hello, how are you?</p>
+        </div>
+        """, unsafe_allow_html=True)
+    st.markdown(f"""
+    <div class="culture-card">
+        <h4>{get_text("lang_phrases_title", lang)}</h4>
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; color:#1a2b4c;">
+            <div><strong style="color:#004488;">{get_text("lang_phrase1", lang)}</strong></div>
+            <div><strong style="color:#004488;">{get_text("lang_phrase2", lang)}</strong></div>
+            <div><strong style="color:#004488;">{get_text("lang_phrase3", lang)}</strong></div>
+            <div><strong style="color:#004488;">{get_text("lang_phrase4", lang)}</strong></div>
+            <div><strong style="color:#004488;">{get_text("lang_phrase5", lang)}</strong></div>
+            <div><strong style="color:#004488;">{get_text("lang_phrase6", lang)}</strong></div>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
-# ================================
-# SECTION 2: HISTORY (id="history")
-# ================================
-st.markdown(f'<h2 id="history" class="section-title">{get_text("history_title", lang)}</h2>', unsafe_allow_html=True)
-st.markdown(f"""
-<div class="culture-card">
-    <h3>🇭🇹 {get_text("history_title", lang)}</h3>
-    <p>{get_text("history_intro", lang)}</p>
-    <p>{get_text("history_more", lang)}</p>
-    <p>
-        <strong style="color:#004488;">{get_text("history_sites", lang)}</strong><br>
-        {get_text("history_site1", lang)}<br>
-        {get_text("history_site2", lang)}<br>
-        {get_text("history_site3", lang)}
-    </p>
-</div>
-""", unsafe_allow_html=True)
+def festivals_content():
+    st.markdown(f'<h2 id="festivals" class="section-title">{get_text("fest_title", lang)}</h2>', unsafe_allow_html=True)
+    st.markdown(f"""
+    <div class="culture-card">
+        <h3>🎊 {get_text("fest_title", lang)}</h3>
+        <p>{get_text("fest_intro", lang)}</p>
+    </div>
+    """, unsafe_allow_html=True)
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown(f"""
+        <div class="culture-card">
+            <h4>{get_text("fest_carnival", lang)}</h4>
+            <p>{get_text("fest_carnival_desc", lang)}</p>
+            <p><strong style="color:#004488;">{get_text("fest_carnival_cities", lang)}</strong> Port-au-Prince, Jacmel</p>
+        </div>
+        """, unsafe_allow_html=True)
+        st.markdown(f"""
+        <div class="culture-card">
+            <h4>{get_text("fest_rara", lang)}</h4>
+            <p>{get_text("fest_rara_desc", lang)}</p>
+        </div>
+        """, unsafe_allow_html=True)
+    with col2:
+        st.markdown(f"""
+        <div class="culture-card">
+            <h4>{get_text("fest_christmas", lang)}</h4>
+            <p>{get_text("fest_christmas_desc", lang)}</p>
+        </div>
+        """, unsafe_allow_html=True)
+        st.markdown(f"""
+        <div class="culture-card">
+            <h4>{get_text("fest_independence", lang)}</h4>
+            <p>{get_text("fest_independence_desc", lang)}</p>
+        </div>
+        """, unsafe_allow_html=True)
 
-# ================================
-# SECTION 3: MUSIC (id="music")
-# ================================
-st.markdown(f'<h2 id="music" class="section-title">{get_text("music_title", lang)}</h2>', unsafe_allow_html=True)
-st.markdown(f"""
-<div class="culture-card">
-    <h3>🎶 {get_text("music_title", lang)}</h3>
-    <p>{get_text("music_intro", lang)}</p>
-</div>
-""", unsafe_allow_html=True)
-
-col1, col2 = st.columns(2)
-with col1:
+def media_content():
+    st.markdown(f'<h2 id="media" class="section-title">{get_text("media_title", lang)}</h2>', unsafe_allow_html=True)
     st.markdown(f"""
     <div class="culture-card">
-        <h4>{get_text("music_compas", lang)}</h4>
-        <p>{get_text("music_compas_desc", lang)}</p>
-        <p><strong style="color:#004488;">{get_text("music_artists", lang)}</strong> Tabou Combo, Coupé Cloué, Jean Baptiste</p>
+        <h3>📺 {get_text("media_title", lang)}</h3>
+        <p>{get_text("media_subtitle", lang)}</p>
     </div>
     """, unsafe_allow_html=True)
-    st.markdown(f"""
-    <div class="culture-card">
-        <h4>{get_text("music_rara", lang)}</h4>
-        <p>{get_text("music_rara_desc", lang)}</p>
-    </div>
-    """, unsafe_allow_html=True)
-with col2:
-    st.markdown(f"""
-    <div class="culture-card">
-        <h4>{get_text("music_meringue", lang)}</h4>
-        <p>{get_text("music_meringue_desc", lang)}</p>
-    </div>
-    """, unsafe_allow_html=True)
-    st.markdown(f"""
-    <div class="culture-card">
-        <h4>{get_text("music_vodou", lang)}</h4>
-        <p>{get_text("music_vodou_desc", lang)}</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-# ================================
-# SECTION 4: ART (id="art")
-# ================================
-st.markdown(f'<h2 id="art" class="section-title">{get_text("art_title", lang)}</h2>', unsafe_allow_html=True)
-st.markdown(f"""
-<div class="culture-card">
-    <h3>🎨 {get_text("art_title", lang)}</h3>
-    <p>{get_text("art_intro", lang)}</p>
-</div>
-""", unsafe_allow_html=True)
-
-col1, col2, col3 = st.columns(3)
-with col1:
-    st.markdown(f"""
-    <div class="culture-card">
-        <h4>{get_text("art_naive", lang)}</h4>
-        <p>{get_text("art_naive_desc", lang)}</p>
-    </div>
-    """, unsafe_allow_html=True)
-with col2:
-    st.markdown(f"""
-    <div class="culture-card">
-        <h4>{get_text("art_sculpture", lang)}</h4>
-        <p>{get_text("art_sculpture_desc", lang)}</p>
-    </div>
-    """, unsafe_allow_html=True)
-with col3:
-    st.markdown(f"""
-    <div class="culture-card">
-        <h4>{get_text("art_vodou_flags", lang)}</h4>
-        <p>{get_text("art_vodou_flags_desc", lang)}</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-# ================================
-# SECTION 5: CUISINE (id="cuisine")
-# ================================
-st.markdown(f'<h2 id="cuisine" class="section-title">{get_text("cuisine_title", lang)}</h2>', unsafe_allow_html=True)
-st.markdown(f"""
-<div class="culture-card">
-    <h3>🇭🇹 {get_text("cuisine_title", lang)}</h3>
-    <p>{get_text("cuisine_intro", lang)}</p>
-</div>
-""", unsafe_allow_html=True)
-
-col1, col2 = st.columns(2)
-with col1:
-    st.markdown(f"""
-    <div class="culture-card">
-        <h4>{get_text("cuisine_griot", lang)}</h4>
-        <p>{get_text("cuisine_griot_desc", lang)}</p>
-    </div>
-    """, unsafe_allow_html=True)
-    st.markdown(f"""
-    <div class="culture-card">
-        <h4>{get_text("cuisine_soup", lang)}</h4>
-        <p>{get_text("cuisine_soup_desc", lang)}</p>
-    </div>
-    """, unsafe_allow_html=True)
-with col2:
-    st.markdown(f"""
-    <div class="culture-card">
-        <h4>{get_text("cuisine_poulet", lang)}</h4>
-        <p>{get_text("cuisine_poulet_desc", lang)}</p>
-    </div>
-    """, unsafe_allow_html=True)
-    st.markdown(f"""
-    <div class="culture-card">
-        <h4>{get_text("cuisine_acassan", lang)}</h4>
-        <p>{get_text("cuisine_acassan_desc", lang)}</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-# ================================
-# SECTION 6: LANGUAGE (id="language")
-# ================================
-st.markdown(f'<h2 id="language" class="section-title">{get_text("lang_title", lang)}</h2>', unsafe_allow_html=True)
-st.markdown(f"""
-<div class="culture-card">
-    <h3>🇭🇹 {get_text("lang_title", lang)}</h3>
-    <p>{get_text("lang_intro", lang)}</p>
-</div>
-""", unsafe_allow_html=True)
-
-col1, col2 = st.columns(2)
-with col1:
-    st.markdown(f"""
-    <div class="culture-card">
-        <h4>{get_text("lang_french", lang)}</h4>
-        <p>{get_text("lang_french_desc", lang)}</p>
-        <p><strong style="color:#004488;">{get_text("lang_french_example", lang)}</strong> "Bonjour, comment allez-vous?"</p>
-    </div>
-    """, unsafe_allow_html=True)
-with col2:
-    st.markdown(f"""
-    <div class="culture-card">
-        <h4>{get_text("lang_creole", lang)}</h4>
-        <p>{get_text("lang_creole_desc", lang)}</p>
-        <p><strong style="color:#004488;">{get_text("lang_french_example", lang)}</strong> "Bonjou, kijan ou ye?"</p>
-        <p style="font-size:0.8rem; color:#555;">{get_text("lang_french_example", lang).replace("Example:", "").strip()}: Hello, how are you?</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-st.markdown(f"""
-<div class="culture-card">
-    <h4>{get_text("lang_phrases_title", lang)}</h4>
-    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; color:#1a2b4c;">
-        <div><strong style="color:#004488;">{get_text("lang_phrase1", lang)}</strong></div>
-        <div><strong style="color:#004488;">{get_text("lang_phrase2", lang)}</strong></div>
-        <div><strong style="color:#004488;">{get_text("lang_phrase3", lang)}</strong></div>
-        <div><strong style="color:#004488;">{get_text("lang_phrase4", lang)}</strong></div>
-        <div><strong style="color:#004488;">{get_text("lang_phrase5", lang)}</strong></div>
-        <div><strong style="color:#004488;">{get_text("lang_phrase6", lang)}</strong></div>
-    </div>
-</div>
-""", unsafe_allow_html=True)
-
-# ================================
-# SECTION 7: FESTIVALS (id="festivals")
-# ================================
-st.markdown(f'<h2 id="festivals" class="section-title">{get_text("fest_title", lang)}</h2>', unsafe_allow_html=True)
-st.markdown(f"""
-<div class="culture-card">
-    <h3>🎊 {get_text("fest_title", lang)}</h3>
-    <p>{get_text("fest_intro", lang)}</p>
-</div>
-""", unsafe_allow_html=True)
-
-col1, col2 = st.columns(2)
-with col1:
-    st.markdown(f"""
-    <div class="culture-card">
-        <h4>{get_text("fest_carnival", lang)}</h4>
-        <p>{get_text("fest_carnival_desc", lang)}</p>
-        <p><strong style="color:#004488;">{get_text("fest_carnival_cities", lang)}</strong> Port-au-Prince, Jacmel</p>
-    </div>
-    """, unsafe_allow_html=True)
-    st.markdown(f"""
-    <div class="culture-card">
-        <h4>{get_text("fest_rara", lang)}</h4>
-        <p>{get_text("fest_rara_desc", lang)}</p>
-    </div>
-    """, unsafe_allow_html=True)
-with col2:
-    st.markdown(f"""
-    <div class="culture-card">
-        <h4>{get_text("fest_christmas", lang)}</h4>
-        <p>{get_text("fest_christmas_desc", lang)}</p>
-    </div>
-    """, unsafe_allow_html=True)
-    st.markdown(f"""
-    <div class="culture-card">
-        <h4>{get_text("fest_independence", lang)}</h4>
-        <p>{get_text("fest_independence_desc", lang)}</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-# ================================
-# SECTION 8: MEDIA (id="media") – Gallery only
-# ================================
-st.markdown(f'<h2 id="media" class="section-title">{get_text("media_title", lang)}</h2>', unsafe_allow_html=True)
-st.markdown(f"""
-<div class="culture-card">
-    <h3>📺 {get_text("media_title", lang)}</h3>
-    <p>{get_text("media_subtitle", lang)}</p>
-</div>
-""", unsafe_allow_html=True)
-
-# Display media items (gallery)
-if st.session_state.media_items:
-    for idx, item in enumerate(st.session_state.media_items):
-        with st.container():
-            st.markdown(f'<div class="media-item">', unsafe_allow_html=True)
-            if item["type"] == "image":
-                try:
-                    img = Image.open(BytesIO(item["data"]))
-                    st.image(img, caption=item["caption"], use_column_width=True)
-                except Exception as e:
-                    st.error(f"Error displaying image: {e}")
-            elif item["type"] == "link":
-                st.markdown(f"**{item['caption'] if item['caption'] else get_text('media_youtube', lang)}**")
-                if "youtube.com" in item['link'] or "youtu.be" in item['link']:
-                    vid_match = re.search(r"(?:v=|\/)([0-9A-Za-z_-]{11})(?:[&?]|$)", item['link'])
-                    if vid_match:
-                        vid = vid_match.group(1)
-                        st.markdown(f'<iframe width="100%" height="315" src="https://www.youtube.com/embed/{vid}" frameborder="0" allowfullscreen></iframe>', unsafe_allow_html=True)
+    # Display media items (gallery)
+    if st.session_state.media_items:
+        for idx, item in enumerate(st.session_state.media_items):
+            with st.container():
+                st.markdown(f'<div class="media-item">', unsafe_allow_html=True)
+                if item["type"] == "image":
+                    try:
+                        img = Image.open(BytesIO(item["data"]))
+                        st.image(img, caption=item["caption"], use_column_width=True)
+                    except Exception as e:
+                        st.error(f"Error displaying image: {e}")
+                elif item["type"] == "link":
+                    st.markdown(f"**{item['caption'] if item['caption'] else get_text('media_youtube', lang)}**")
+                    if "youtube.com" in item['link'] or "youtu.be" in item['link']:
+                        vid_match = re.search(r"(?:v=|\/)([0-9A-Za-z_-]{11})(?:[&?]|$)", item['link'])
+                        if vid_match:
+                            vid = vid_match.group(1)
+                            st.markdown(f'<iframe width="100%" height="315" src="https://www.youtube.com/embed/{vid}" frameborder="0" allowfullscreen></iframe>', unsafe_allow_html=True)
+                        else:
+                            st.markdown(f'<a href="{item["link"]}" target="_blank">{item["link"]}</a>', unsafe_allow_html=True)
                     else:
                         st.markdown(f'<a href="{item["link"]}" target="_blank">{item["link"]}</a>', unsafe_allow_html=True)
                 else:
-                    st.markdown(f'<a href="{item["link"]}" target="_blank">{item["link"]}</a>', unsafe_allow_html=True)
-            else:
-                st.warning("Unknown media type.")
-            
-            # Show remove button only if logged in
-            if st.session_state.media_authenticated:
-                if st.button(f"{get_text('media_remove', lang)} {idx+1}", key=f"remove_{idx}_dash"):
-                    del st.session_state.media_items[idx]
-                    st.rerun()
-            
-            st.markdown('</div>', unsafe_allow_html=True)
-            st.markdown("---")
+                    st.warning("Unknown media type.")
+                
+                # Show remove button only if logged in
+                if st.session_state.media_authenticated:
+                    if st.button(f"{get_text('media_remove', lang)} {idx+1}", key=f"remove_{idx}_dash"):
+                        del st.session_state.media_items[idx]
+                        st.rerun()
+                
+                st.markdown('</div>', unsafe_allow_html=True)
+                st.markdown("---")
+    else:
+        st.info(get_text("media_empty", lang))
+
+def about_content():
+    st.markdown(f'<h2 id="about" class="section-title">{get_text("about_title", lang)}</h2>', unsafe_allow_html=True)
+    st.markdown(f"""
+    <div class="culture-card">
+        <h3>🏷️ HCC – Haiti Culture Connection</h3>
+        <p>{get_text("about_intro", lang)}</p>
+        <p>{get_text("about_mission", lang)}</p>
+        <p>{get_text("about_connection", lang)}</p>
+    </div>
+    """, unsafe_allow_html=True)
+    st.markdown(f"""
+    <div class="about-quote">
+        " {get_text("about_quote", lang)} "
+    </div>
+    """, unsafe_allow_html=True)
+    st.markdown(f"""
+    <div class="culture-card">
+        <h3>📱 {get_text("about_ceo", lang)}</h3>
+        <p><strong style="color:#004488;">📞 {get_text("about_whatsapp", lang)}</strong></p>
+        <p><strong style="color:#004488;">🌐 {get_text("about_social", lang)}</strong></p>
+        <p style="font-size:0.8rem; color:#555; margin-top:10px;">
+            🇭🇹 <strong>HCC</strong> – Le nouveau patrimoine structurel de la culture haïtienne.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+    st.markdown("""
+    <div style="text-align:center; padding:10px;">
+        <p style="font-size:1.2rem;">
+            <a href="https://wa.me/18094177808" target="_blank" style="text-decoration:none; color:#004488;">📱 WhatsApp</a>
+            &nbsp;|&nbsp;
+            <a href="https://www.instagram.com/HCC" target="_blank" style="text-decoration:none; color:#004488;">📸 Instagram</a>
+            &nbsp;|&nbsp;
+            <a href="https://www.facebook.com/HCC" target="_blank" style="text-decoration:none; color:#004488;">📘 Facebook</a>
+            &nbsp;|&nbsp;
+            <a href="https://twitter.com/HCC" target="_blank" style="text-decoration:none; color:#004488;">🐦 Twitter</a>
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+# Render sections based on selection
+# If no specific section, show all
+if st.session_state.selected_section is None:
+    render_section("home", "home_title", home_content)
+    render_section("history", "history_title", history_content)
+    render_section("music", "music_title", music_content)
+    render_section("art", "art_title", art_content)
+    render_section("cuisine", "cuisine_title", cuisine_content)
+    render_section("language", "lang_title", language_content)
+    render_section("festivals", "fest_title", festivals_content)
+    render_section("media", "media_title", media_content)
+    render_section("about", "about_title", about_content)
 else:
-    st.info(get_text("media_empty", lang))
-
-# ================================
-# SECTION 9: ABOUT HCC (id="about")
-# ================================
-st.markdown(f'<h2 id="about" class="section-title">{get_text("about_title", lang)}</h2>', unsafe_allow_html=True)
-
-st.markdown(f"""
-<div class="culture-card">
-    <h3>🏷️ HCC – Haiti Culture Connection</h3>
-    <p>{get_text("about_intro", lang)}</p>
-    <p>{get_text("about_mission", lang)}</p>
-    <p>{get_text("about_connection", lang)}</p>
-</div>
-""", unsafe_allow_html=True)
-
-st.markdown(f"""
-<div class="about-quote">
-    " {get_text("about_quote", lang)} "
-</div>
-""", unsafe_allow_html=True)
-
-st.markdown(f"""
-<div class="culture-card">
-    <h3>📱 {get_text("about_ceo", lang)}</h3>
-    <p><strong style="color:#004488;">📞 {get_text("about_whatsapp", lang)}</strong></p>
-    <p><strong style="color:#004488;">🌐 {get_text("about_social", lang)}</strong></p>
-    <p style="font-size:0.8rem; color:#555; margin-top:10px;">
-        🇭🇹 <strong>HCC</strong> – Le nouveau patrimoine structurel de la culture haïtienne.
-    </p>
-</div>
-""", unsafe_allow_html=True)
-
-st.markdown("""
-<div style="text-align:center; padding:10px;">
-    <p style="font-size:1.2rem;">
-        <a href="https://wa.me/18094177808" target="_blank" style="text-decoration:none; color:#004488;">📱 WhatsApp</a>
-        &nbsp;|&nbsp;
-        <a href="https://www.instagram.com/HCC" target="_blank" style="text-decoration:none; color:#004488;">📸 Instagram</a>
-        &nbsp;|&nbsp;
-        <a href="https://www.facebook.com/HCC" target="_blank" style="text-decoration:none; color:#004488;">📘 Facebook</a>
-        &nbsp;|&nbsp;
-        <a href="https://twitter.com/HCC" target="_blank" style="text-decoration:none; color:#004488;">🐦 Twitter</a>
-    </p>
-</div>
-""", unsafe_allow_html=True)
+    # Only show the selected section
+    if st.session_state.selected_section == "home":
+        render_section("home", "home_title", home_content)
+    elif st.session_state.selected_section == "history":
+        render_section("history", "history_title", history_content)
+    elif st.session_state.selected_section == "music":
+        render_section("music", "music_title", music_content)
+    elif st.session_state.selected_section == "art":
+        render_section("art", "art_title", art_content)
+    elif st.session_state.selected_section == "cuisine":
+        render_section("cuisine", "cuisine_title", cuisine_content)
+    elif st.session_state.selected_section == "language":
+        render_section("language", "lang_title", language_content)
+    elif st.session_state.selected_section == "festivals":
+        render_section("festivals", "fest_title", festivals_content)
+    elif st.session_state.selected_section == "media":
+        render_section("media", "media_title", media_content)
+    elif st.session_state.selected_section == "about":
+        render_section("about", "about_title", about_content)
 
 # ---------- Footer ----------
 st.markdown("---")
