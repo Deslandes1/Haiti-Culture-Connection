@@ -435,6 +435,11 @@ TEXTS = {
         "fr": "🔐 Propriétaire",
         "es": "🔐 Propietario"
     },
+    "voice_button_label": {
+        "en": "🔊 Voice (AI Female)",
+        "fr": "🔊 Voix (IA Femme)",
+        "es": "🔊 Voz (IA Mujer)"
+    },
     "media_add_image": {
         "en": "📸 Upload Image",
         "fr": "📸 Télécharger une image",
@@ -532,6 +537,10 @@ if 'selected_section' not in st.session_state:
     st.session_state.selected_section = None
 if 'editing_index' not in st.session_state:
     st.session_state.editing_index = None
+if 'voice_audio_base64' not in st.session_state:
+    st.session_state.voice_audio_base64 = None
+if 'show_voice_player' not in st.session_state:
+    st.session_state.show_voice_player = False
 
 # ---------- Language selection ----------
 def set_language():
@@ -554,7 +563,7 @@ def on_menu_change():
     }
     st.session_state.selected_section = menu_map.get(selected, None)
 
-# ---------- CSS (Light Blue Theme + Animated Logo) ----------
+# ---------- CSS (Light Blue Theme + Animated Logo with Golden Stars) ----------
 st.markdown("""
     <style>
     .stApp {
@@ -723,28 +732,165 @@ st.markdown("""
         margin: 10px 0;
         border: 1px solid rgba(0, 68, 170, 0.1);
     }
+
+    /* ---------- ANIMATED LOGO WITH GOLDEN STARS ---------- */
+    .logo-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 10px 0;
+    }
+    .logo-emblem {
+        position: relative;
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 30% 30%, #0044aa, #001a4a);
+        border: 4px solid #d21034;
+        box-shadow: 0 0 40px rgba(210, 16, 52, 0.3), 0 0 80px rgba(0, 68, 170, 0.2), inset 0 0 30px rgba(255, 215, 0, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: pulseGlow 3s ease-in-out infinite;
+        overflow: visible;
+    }
+    @keyframes pulseGlow {
+        0%, 100% { box-shadow: 0 0 40px rgba(210, 16, 52, 0.3), 0 0 80px rgba(0, 68, 170, 0.2); }
+        50% { box-shadow: 0 0 60px rgba(210, 16, 52, 0.5), 0 0 120px rgba(0, 68, 170, 0.3), 0 0 200px rgba(255, 215, 0, 0.1); }
+    }
+    .logo-emblem .hc-text {
+        font-size: 3.5rem;
+        font-weight: 900;
+        letter-spacing: -4px;
+        background: linear-gradient(135deg, #0044aa, #3399ff, #ffcc00, #d21034);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-shadow: 0 0 30px rgba(0, 68, 170, 0.3);
+        font-family: 'Inter', sans-serif;
+        transform: rotate(-2deg);
+        filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.2));
+        position: relative;
+        z-index: 10;
+    }
+    /* Rotating golden stars (instead of green nodes) */
+    .stars-container {
+        position: absolute;
+        top: -20px;
+        left: -20px;
+        width: calc(100% + 40px);
+        height: calc(100% + 40px);
+        pointer-events: none;
+        animation: rotateStars 12s linear infinite;
+        z-index: 5;
+    }
+    @keyframes rotateStars {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    .star {
+        position: absolute;
+        font-size: 1.4rem;
+        color: #FFD700;
+        text-shadow: 0 0 20px #FFD700, 0 0 40px #FFA500;
+        animation: starPulse 2s ease-in-out infinite alternate;
+        line-height: 1;
+        filter: drop-shadow(0 0 6px rgba(255, 215, 0, 0.8));
+    }
+    .star:nth-child(1) { top: 0%; left: 50%; animation-delay: 0s; }
+    .star:nth-child(2) { top: 15%; left: 90%; animation-delay: 0.2s; }
+    .star:nth-child(3) { top: 65%; left: 95%; animation-delay: 0.4s; }
+    .star:nth-child(4) { top: 100%; left: 50%; animation-delay: 0.6s; }
+    .star:nth-child(5) { top: 65%; left: 5%; animation-delay: 0.8s; }
+    .star:nth-child(6) { top: 15%; left: 10%; animation-delay: 1.0s; }
+    .star:nth-child(7) { top: 40%; left: 100%; animation-delay: 0.3s; }
+    .star:nth-child(8) { top: 40%; left: 0%; animation-delay: 0.7s; }
+    .star:nth-child(9) { top: 80%; left: 20%; animation-delay: 0.5s; }
+    .star:nth-child(10) { top: 20%; left: 70%; animation-delay: 0.9s; }
+    @keyframes starPulse {
+        0% { opacity: 0.4; transform: scale(0.8) rotate(0deg); }
+        100% { opacity: 1; transform: scale(1.2) rotate(20deg); }
+    }
+    /* Golden ring lines */
+    .ring-line {
+        position: absolute;
+        top: -10px;
+        left: -10px;
+        width: calc(100% + 20px);
+        height: calc(100% + 20px);
+        border-radius: 50%;
+        border: 1px solid rgba(255, 215, 0, 0.2);
+        box-shadow: 0 0 20px rgba(255, 215, 0, 0.05);
+        animation: ringPulse 4s ease-in-out infinite;
+        z-index: 2;
+    }
+    .ring-line:nth-child(2) {
+        top: 0px;
+        left: 0px;
+        width: 100%;
+        height: 100%;
+        border-color: rgba(255, 215, 0, 0.1);
+        animation-delay: 2s;
+    }
+    @keyframes ringPulse {
+        0%, 100% { opacity: 0.3; }
+        50% { opacity: 0.8; }
+    }
+    /* Bokeh particles (golden) */
+    .bokeh {
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255, 215, 0, 0.15);
+        filter: blur(8px);
+        animation: bokehFloat 6s ease-in-out infinite alternate;
+        z-index: 1;
+    }
+    .bokeh:nth-child(1) { width: 30px; height: 30px; top: 10%; left: 10%; }
+    .bokeh:nth-child(2) { width: 20px; height: 20px; bottom: 15%; right: 15%; animation-delay: 2s; }
+    .bokeh:nth-child(3) { width: 40px; height: 40px; top: 40%; left: 80%; animation-delay: 4s; }
+    @keyframes bokehFloat {
+        0% { transform: translate(0, 0) scale(1); opacity: 0.3; }
+        100% { transform: translate(10px, -20px) scale(1.2); opacity: 0.6; }
+    }
+    .logo-text {
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 2px;
+        color: #004488;
+        margin-top: 8px;
+        text-align: center;
+        text-shadow: 0 0 20px rgba(0, 68, 170, 0.1);
+        background: linear-gradient(90deg, #0044aa, #d21034);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
     </style>
 """, unsafe_allow_html=True)
 
-# ---------- Top Bar: Logo, Language, Menu, and Owner Toggle ----------
+# ---------- Top Bar: Logo, Language, Menu, Voice Button, and Owner Toggle ----------
 lang = st.session_state.lang
 
 col1, col2, col3 = st.columns([1, 2, 1])
 with col1:
+    # Animated Logo with Golden Stars
     st.markdown("""
     <div class="logo-container">
         <div class="logo-emblem">
             <div class="ring-line"></div>
             <div class="ring-line"></div>
-            <div class="nodes-container">
-                <div class="node"></div>
-                <div class="node"></div>
-                <div class="node"></div>
-                <div class="node"></div>
-                <div class="node"></div>
-                <div class="node"></div>
-                <div class="node"></div>
-                <div class="node"></div>
+            <div class="stars-container">
+                <span class="star">★</span>
+                <span class="star">★</span>
+                <span class="star">★</span>
+                <span class="star">★</span>
+                <span class="star">★</span>
+                <span class="star">★</span>
+                <span class="star">★</span>
+                <span class="star">★</span>
+                <span class="star">★</span>
+                <span class="star">★</span>
             </div>
             <div class="bokeh"></div>
             <div class="bokeh"></div>
@@ -757,6 +903,7 @@ with col1:
 
 with col3:
     st.markdown('<div style="display:flex; justify-content:flex-end; align-items:center; gap:10px; padding-top:10px; flex-wrap:wrap;">', unsafe_allow_html=True)
+    # Language selector
     lang_choice = st.selectbox(
         "🌐 Language",
         ["English", "Français", "Español"],
@@ -767,6 +914,7 @@ with col3:
         on_change=set_language,
         label_visibility="collapsed"
     )
+    # Menu
     menu_items = [
         get_text('nav_dashboard', lang),
         get_text('nav_home', lang),
@@ -806,12 +954,55 @@ with col3:
         label_visibility="collapsed",
         on_change=on_menu_change
     )
+    # ---- AI Voice Button (Top Right) ----
+    if st.button(get_text('voice_button_label', lang), key="voice_button_top", use_container_width=False):
+        # Generate voice
+        if lang == "fr":
+            voice_script = get_text("about_voice_script_fr", lang)
+            voice_lang = "fr"
+        elif lang == "es":
+            voice_script = get_text("about_voice_script_es", lang)
+            voice_lang = "es"
+        else:
+            voice_script = get_text("about_voice_script_en", lang)
+            voice_lang = "en"
+        with st.spinner("🔊 Generating voice..."):
+            try:
+                from gtts import gTTS
+                tts = gTTS(text=voice_script, lang=voice_lang, slow=False)
+                audio_bytes = BytesIO()
+                tts.write_to_fp(audio_bytes)
+                audio_bytes.seek(0)
+                audio_base64 = base64.b64encode(audio_bytes.read()).decode()
+                st.session_state.voice_audio_base64 = audio_base64
+                st.session_state.show_voice_player = True
+                st.rerun()
+            except Exception as e:
+                st.error(f"❌ Error generating voice: {e}")
+                st.info("💡 Please ensure you have an internet connection.")
+    # ---- Owner toggle ----
     if st.button(get_text('owner_toggle_button', lang), key="owner_toggle_btn", use_container_width=False):
         st.session_state.show_owner_panel = not st.session_state.show_owner_panel
         st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
 
-# ---------- Owner Panel ----------
+# ---------- Voice Player (displayed just below top bar if triggered) ----------
+if st.session_state.show_voice_player and st.session_state.voice_audio_base64:
+    audio_html = f"""
+        <div style="margin: 10px 0 20px 0;">
+            <audio controls preload="auto" style="width: 100%;" autoplay>
+                <source src="data:audio/mp3;base64,{st.session_state.voice_audio_base64}" type="audio/mp3">
+                Your browser does not support the audio element.
+            </audio>
+            <p style="color: #aaaaaa; font-size: 0.8rem;">
+                💡 If the audio doesn't play automatically, click the play button above.
+            </p>
+        </div>
+    """
+    st.markdown(audio_html, unsafe_allow_html=True)
+    # Optionally hide the player after a while? We'll keep it.
+
+# ---------- Owner Panel (unchanged) ----------
 if st.session_state.show_owner_panel:
     with st.container():
         st.markdown('<div class="owner-panel">', unsafe_allow_html=True)
@@ -1233,24 +1424,21 @@ def media_content():
     else:
         st.info(get_text("media_empty", lang))
 
-# ---------- ABOUT HCC SECTION (with AI Voice) ----------
+# ---------- ABOUT HCC SECTION (with AI Voice button inside as well) ----------
 def about_content():
     st.markdown(f'<h2 id="about" class="section-title">{get_text("about_title", lang)}</h2>', unsafe_allow_html=True)
     
-    # ---- AI Voice Button ----
-    # Get the appropriate voice script for the selected language
-    if lang == "fr":
-        voice_script = get_text("about_voice_script_fr", lang)
-        voice_lang = "fr"
-    elif lang == "es":
-        voice_script = get_text("about_voice_script_es", lang)
-        voice_lang = "es"
-    else:
-        voice_script = get_text("about_voice_script_en", lang)
-        voice_lang = "en"
-    
-    # Voice button
-    if st.button(get_text('play_voice_label', lang), use_container_width=True):
+    # ---- In-section AI Voice Button (optional, for convenience) ----
+    if st.button(get_text('play_voice_label', lang), key="voice_button_about", use_container_width=True):
+        if lang == "fr":
+            voice_script = get_text("about_voice_script_fr", lang)
+            voice_lang = "fr"
+        elif lang == "es":
+            voice_script = get_text("about_voice_script_es", lang)
+            voice_lang = "es"
+        else:
+            voice_script = get_text("about_voice_script_en", lang)
+            voice_lang = "en"
         with st.spinner("🔊 Generating voice..."):
             try:
                 from gtts import gTTS
@@ -1258,22 +1446,13 @@ def about_content():
                 audio_bytes = BytesIO()
                 tts.write_to_fp(audio_bytes)
                 audio_bytes.seek(0)
-                
                 audio_base64 = base64.b64encode(audio_bytes.read()).decode()
-                audio_html = f"""
-                    <audio autoplay controls preload="auto" style="width: 100%; margin-top: 10px;">
-                        <source src="data:audio/mp3;base64,{audio_base64}" type="audio/mp3">
-                        Your browser does not support the audio element.
-                    </audio>
-                    <p style="color: #aaaaaa; font-size: 0.8rem;">
-                        💡 If the audio doesn't play automatically, click the play button above.
-                    </p>
-                """
-                st.markdown(audio_html, unsafe_allow_html=True)
-                st.success("✅ Voice is playing!")
+                st.session_state.voice_audio_base64 = audio_base64
+                st.session_state.show_voice_player = True
+                st.rerun()
             except Exception as e:
                 st.error(f"❌ Error generating voice: {e}")
-                st.info("💡 Please ensure you have an internet connection for gTTS to work.")
+                st.info("💡 Please ensure you have an internet connection.")
     
     st.markdown("---")
     
