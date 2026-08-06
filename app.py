@@ -118,9 +118,13 @@ TEXTS = {
     "about_ceo": {"en": "CEO: Jean Charles", "fr": "PDG: Jean Charles", "es": "CEO: Jean Charles"},
     "about_whatsapp": {"en": "WhatsApp: +18094177808", "fr": "WhatsApp: +18094177808", "es": "WhatsApp: +18094177808"},
     "about_social": {"en": "Follow everywhere on social media @HCC", "fr": "Suivez partout sur les réseaux sociaux @HCC", "es": "Sigue en todas partes en redes sociales @HCC"},
-    "about_voice_script_fr": {"en": "", "fr": "À propos de HCC – Haiti Culture Connection. HCC: Haiticultureconnection. Le premier Label dans l'histoire de l'HMI. Une toute première initiative aussi bénéfique pour la jeunesse productive haïtienne, désormais les jeunes talents haïtiens ont un recours quand il s'agit de vouloir financer leurs projets d'Arts @HCC. Avec une équipe qui s'engage pour encadrer les œuvres d'Arts, pour valoriser nos patrimoines historiques et culturels, promouvoir et vendre la culture haïtienne. HCC veut établir une connection directe entre tous les artistes haïtiens, en reliant leurs business et entreprises fonctionnant dans le domaine d'art en vue de pouvoir grandir ensemble. Cette connection directe permettra une facilité des échanges commerciaux dans l'HMI et aussi ça rapprochera les artistes et le public l'un vers l'autre tout aussi bien une connection qui va diriger tous les jeunes talents vers leurs objectifs. HCC, le nouveau patrimoine structurel de la culture haïtienne. La culture est la preuve la plus tangible de l'existence de toutes civilisations. PDG: Jean Charles. WhatsApp: plus 1 809 417 7808. Suivez partout sur les réseaux sociaux @HCC. Cette application a été construite par Gesner Deslandes, ingénieur en chef chez GlobalInternet.py, une société de logiciels en ligne pour un client vivant dans l'île des Caraïbes. Contactez-nous au (509)-47385663 ou par email à deslandes78@gmail.com. N'hésitez pas à nous contacter pour construire le site web de vos rêves."},
-    "about_voice_script_en": {"en": "About HCC – Haiti Culture Connection. HCC: Haiti Culture Connection. The first label in the history of HMI. A groundbreaking initiative for Haiti's productive youth. Now young Haitian talents have a recourse when it comes to financing their art projects @HCC. With a committed team dedicated to mentoring artworks, promoting our historical and cultural heritage, and marketing Haitian culture. HCC aims to establish a direct connection between all Haitian artists, linking their businesses and enterprises operating in the arts sector so they can grow together. This direct connection will facilitate commercial exchanges within HMI and also bring artists and the public closer to each other – a connection that will guide all young talents toward their goals. HCC is the new structural heritage of Haitian culture. Culture is the most tangible proof of the existence of all civilizations. CEO: Jean Charles. WhatsApp: plus 1 809 417 7808. Follow everywhere on social media @HCC. This application was built by Gesner Deslandes, chief engineer at GlobalInternet.py, an online software company for a client living in the Caribbean Island. Contact us at (509)-47385663 or email deslandes78@gmail.com. Get in touch with us to build the website of your dream.", "fr": "", "es": ""},
-    "about_voice_script_es": {"es": "Acerca de HCC – Haiti Culture Connection. HCC: Haiticultureconnection. La primera etiqueta en la historia de HMI. Una iniciativa pionera para la juventud productiva haitiana. Ahora los jóvenes talentos haitianos tienen un recurso cuando se trata de financiar sus proyectos de arte @HCC. Con un equipo comprometido a mentorizar obras de arte, valorizar nuestro patrimonio histórico y cultural, y promover y vender la cultura haitiana. HCC busca establecer una conexión directa entre todos los artistas haitianos, conectando sus negocios y empresas que operan en el sector artístico para que puedan crecer juntos. Esta conexión directa facilitará los intercambios comerciales dentro de HMI y también acercará a los artistas y al público entre sí – una conexión que guiará a todos los jóvenes talentos hacia sus objetivos. HCC, el nuevo patrimonio estructural de la cultura haitiana. La cultura es la prueba más tangible de la existencia de todas las civilizaciones. CEO: Jean Charles. WhatsApp: más 1 809 417 7808. Sigue en todas partes en redes sociales @HCC. Esta aplicación fue construida por Gesner Deslandes, ingeniero jefe de GlobalInternet.py, una empresa de software en línea para un cliente que vive en la isla del Caribe. Contáctenos al (509)-47385663 o por correo electrónico deslandes78@gmail.com. Póngase en contacto con nosotros para construir el sitio web de sus sueños."},
+
+    # ---------- SHORTENED VOICE SCRIPTS (to avoid TTS length errors) ----------
+    "about_voice_script_en": {"en": "Welcome to Haiti Culture Connection. HCC is the first label in the history of HMI, a groundbreaking initiative for Haiti's productive youth. With a committed team, HCC aims to establish a direct connection between all Haitian artists. Culture is the most tangible proof of the existence of all civilizations. CEO: Jean Charles. Follow us on social media @HCC.", "fr": "", "es": ""},
+    "about_voice_script_fr": {"fr": "Bienvenue à Haiti Culture Connection. HCC est le premier label dans l'histoire de HMI, une initiative révolutionnaire pour la jeunesse productive haïtienne. Avec une équipe engagée, HCC vise à établir une connexion directe entre tous les artistes haïtiens. La culture est la preuve la plus tangible de l'existence de toutes civilisations. PDG: Jean Charles. Suivez-nous sur les réseaux sociaux @HCC.", "en": "", "es": ""},
+    "about_voice_script_es": {"es": "Bienvenido a Haiti Culture Connection. HCC es la primera etiqueta en la historia de HMI, una iniciativa pionera para la juventud productiva haitiana. Con un equipo comprometido, HCC busca establecer una conexión directa entre todos los artistas haitianos. La cultura es la prueba más tangible de la existencia de todas las civilizaciones. CEO: Jean Charles. Síguenos en redes sociales @HCC.", "en": "", "fr": ""},
+
+    # Media
     "media_title": {"en": "📺 Media Gallery", "fr": "📺 Galerie Médias", "es": "📺 Galería de Medios"},
     "media_subtitle": {"en": "View images, videos, and links shared by the community.", "fr": "Voir les images, vidéos et liens partagés par la communauté.", "es": "Ver imágenes, videos y enlaces compartidos por la comunidad."},
     "media_empty": {"en": "No media added yet.", "fr": "Aucun média ajouté pour l'instant.", "es": "No se han agregado medios aún."},
@@ -519,6 +523,7 @@ with col3:
     )
     # Voice button
     if st.button(get_text('voice_button_label', lang), key="voice_button_top", use_container_width=False):
+        # Choose the appropriate shortened voice script
         if lang == "fr":
             voice_script = get_text("about_voice_script_fr", lang)
             voice_lang = "fr"
@@ -540,8 +545,8 @@ with col3:
                 st.session_state.show_voice_player = True
                 st.rerun()
             except Exception as e:
-                st.error(f"❌ Error: {e}")
-                st.info("💡 Please check internet connection.")
+                st.error(f"❌ Voice generation error: {str(e)}")
+                st.info("💡 Please try again later or use a shorter text.")
     # Owner toggle
     if st.button(get_text('owner_toggle_button', lang), key="owner_toggle_btn", use_container_width=False):
         st.session_state.show_owner_panel = not st.session_state.show_owner_panel
@@ -986,31 +991,8 @@ def media_content():
 
 def about_content():
     st.markdown(f'<h2 id="about" class="section-title">{get_text("about_title", lang)}</h2>', unsafe_allow_html=True)
-    if st.button(get_text('play_voice_label', lang), key="voice_button_about", use_container_width=True):
-        if lang == "fr":
-            voice_script = get_text("about_voice_script_fr", lang)
-            voice_lang = "fr"
-        elif lang == "es":
-            voice_script = get_text("about_voice_script_es", lang)
-            voice_lang = "es"
-        else:
-            voice_script = get_text("about_voice_script_en", lang)
-            voice_lang = "en"
-        with st.spinner("🔊 Generating..."):
-            try:
-                from gtts import gTTS
-                tts = gTTS(text=voice_script, lang=voice_lang, slow=False)
-                audio_bytes = BytesIO()
-                tts.write_to_fp(audio_bytes)
-                audio_bytes.seek(0)
-                audio_base64 = base64.b64encode(audio_bytes.read()).decode()
-                st.session_state.voice_audio_base64 = audio_base64
-                st.session_state.show_voice_player = True
-                st.rerun()
-            except Exception as e:
-                st.error(f"❌ Error: {e}")
-                st.info("💡 Please check internet connection.")
-    st.markdown("---")
+    # Voice button removed – only top bar voice remains
+
     st.markdown(f"""
     <div class="culture-card">
         <h3>🏷️ {get_text("nav_about", lang)}</h3>
