@@ -336,6 +336,21 @@ TEXTS = {
         "fr": "Suivez partout sur les réseaux sociaux @HCC",
         "es": "Sigue en todas partes en redes sociales @HCC"
     },
+
+    # ---------- ABOUT VOICE SCRIPTS (translated with conclusion) ----------
+    "about_voice_script_fr": {
+        "en": "",  # not used for French, but keep structure
+        "fr": "À propos de HCC – Haiti Culture Connection. HCC: Haiticultureconnection. Le premier Label dans l'histoire de l'HMI. Une toute première initiative aussi bénéfique pour la jeunesse productive haïtienne, désormais les jeunes talents haïtiens ont un recours quand il s'agit de vouloir financer leurs projets d'Arts @HCC. Avec une équipe qui s'engage pour encadrer les œuvres d'Arts, pour valoriser nos patrimoines historiques et culturels, promouvoir et vendre la culture haïtienne. HCC veut établir une connection directe entre tous les artistes haïtiens, en reliant leurs business et entreprises fonctionnant dans le domaine d'art en vue de pouvoir grandir ensemble. Cette connection directe permettra une facilité des échanges commerciaux dans l'HMI et aussi ça rapprochera les artistes et le public l'un vers l'autre tout aussi bien une connection qui va diriger tous les jeunes talents vers leurs objectifs. HCC, le nouveau patrimoine structurel de la culture haïtienne. La culture est la preuve la plus tangible de l'existence de toutes civilisations. PDG: Jean Charles. WhatsApp: plus 1 809 417 7808. Suivez partout sur les réseaux sociaux @HCC. Cette application a été construite par Gesner Deslandes, ingénieur en chef chez GlobalInternet.py, une société de logiciels en ligne pour un client vivant dans l'île des Caraïbes. Contactez-nous au (509)-47385663 ou par email à deslandes78@gmail.com. N'hésitez pas à nous contacter pour construire le site web de vos rêves."
+    },
+    "about_voice_script_en": {
+        "en": "About HCC – Haiti Culture Connection. HCC: Haiti Culture Connection. The first label in the history of HMI. A groundbreaking initiative for Haiti's productive youth. Now young Haitian talents have a recourse when it comes to financing their art projects @HCC. With a committed team dedicated to mentoring artworks, promoting our historical and cultural heritage, and marketing Haitian culture. HCC aims to establish a direct connection between all Haitian artists, linking their businesses and enterprises operating in the arts sector so they can grow together. This direct connection will facilitate commercial exchanges within HMI and also bring artists and the public closer to each other – a connection that will guide all young talents toward their goals. HCC is the new structural heritage of Haitian culture. Culture is the most tangible proof of the existence of all civilizations. CEO: Jean Charles. WhatsApp: plus 1 809 417 7808. Follow everywhere on social media @HCC. This application was built by Gesner Deslandes, chief engineer at GlobalInternet.py, an online software company for a client living in the Caribbean Island. Contact us at (509)-47385663 or email deslandes78@gmail.com. Get in touch with us to build the website of your dream.",
+        "fr": "",
+        "es": ""
+    },
+    "about_voice_script_es": {
+        "es": "Acerca de HCC – Haiti Culture Connection. HCC: Haiticultureconnection. La primera etiqueta en la historia de HMI. Una iniciativa pionera para la juventud productiva haitiana. Ahora los jóvenes talentos haitianos tienen un recurso cuando se trata de financiar sus proyectos de arte @HCC. Con un equipo comprometido a mentorizar obras de arte, valorizar nuestro patrimonio histórico y cultural, y promover y vender la cultura haitiana. HCC busca establecer una conexión directa entre todos los artistas haitianos, conectando sus negocios y empresas que operan en el sector artístico para que puedan crecer juntos. Esta conexión directa facilitará los intercambios comerciales dentro de HMI y también acercará a los artistas y al público entre sí – una conexión que guiará a todos los jóvenes talentos hacia sus objetivos. HCC, el nuevo patrimonio estructural de la cultura haitiana. La cultura es la prueba más tangible de la existencia de todas las civilizaciones. CEO: Jean Charles. WhatsApp: más 1 809 417 7808. Sigue en todas partes en redes sociales @HCC. Esta aplicación fue construida por Gesner Deslandes, ingeniero jefe de GlobalInternet.py, una empresa de software en línea para un cliente que vive en la isla del Caribe. Contáctenos al (509)-47385663 o por correo electrónico deslandes78@gmail.com. Póngase en contacto con nosotros para construir el sitio web de sus sueños."
+    },
+
     # Media section
     "media_title": {
         "en": "📺 Media Gallery",
@@ -490,6 +505,11 @@ TEXTS = {
         "en": "No media to manage.",
         "fr": "Aucun média à gérer.",
         "es": "No hay medios para gestionar."
+    },
+    "play_voice_label": {
+        "en": "🔊 Listen to About HCC (AI Female Voice)",
+        "fr": "🔊 Écouter À propos de HCC (Voix féminine IA)",
+        "es": "🔊 Escuchar Acerca de HCC (Voz femenina IA)"
     }
 }
 
@@ -515,7 +535,6 @@ if 'editing_index' not in st.session_state:
 
 # ---------- Language selection ----------
 def set_language():
-    # Use the correct widget key
     st.session_state.lang = LANGUAGES[st.session_state.lang_selector_top]
 
 # ---------- Menu selection callback ----------
@@ -538,183 +557,44 @@ def on_menu_change():
 # ---------- CSS (Light Blue Theme + Animated Logo) ----------
 st.markdown("""
     <style>
-    /* Main background */
     .stApp {
         background: #e6f0ff !important;
     }
-    
-    /* Top bar with language selector and owner toggle */
-    .top-bar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 10px 20px;
-        background: #d4e4f7;
-        border-radius: 12px;
-        margin-bottom: 20px;
-        border: 1px solid rgba(0, 68, 170, 0.1);
+    .stSidebar,
+    .stSidebar .sidebar-content,
+    section[data-testid="stSidebar"] {
+        background: #d4e4f7 !important;
     }
-    .top-bar .logo-area {
-        display: flex;
-        align-items: center;
-        gap: 15px;
+    .stSidebar .stMarkdown,
+    .stSidebar .stCaption,
+    .stSidebar .stButton button {
+        color: #1a2b4c !important;
     }
-    .top-bar .right-area {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-    }
-    .top-bar .right-area select {
-        padding: 6px 12px;
-        border-radius: 8px;
-        border: 1px solid rgba(0, 68, 170, 0.2);
-        background: white;
-        color: #1a2b4c;
-        font-size: 0.9rem;
-    }
-    .owner-toggle-btn {
-        background: #0066cc !important;
-        color: white !important;
-        border: none !important;
-        border-radius: 20px !important;
-        padding: 6px 16px !important;
-        font-size: 0.9rem !important;
-        cursor: pointer;
-        transition: 0.2s;
-    }
-    .owner-toggle-btn:hover {
-        background: #004488 !important;
-    }
-    
-    /* Animated Logo Container */
-    .logo-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: 10px 0;
-    }
-    .logo-emblem {
-        position: relative;
-        width: 120px;
-        height: 120px;
-        border-radius: 50%;
-        background: radial-gradient(circle at 30% 30%, #0044aa, #001a4a);
-        border: 4px solid #d21034;
-        box-shadow: 0 0 40px rgba(210, 16, 52, 0.3), 0 0 80px rgba(0, 68, 170, 0.2), inset 0 0 30px rgba(255, 215, 0, 0.1);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        animation: pulseGlow 3s ease-in-out infinite;
-        overflow: visible;
-    }
-    @keyframes pulseGlow {
-        0%, 100% { box-shadow: 0 0 40px rgba(210, 16, 52, 0.3), 0 0 80px rgba(0, 68, 170, 0.2); }
-        50% { box-shadow: 0 0 60px rgba(210, 16, 52, 0.5), 0 0 120px rgba(0, 68, 170, 0.3), 0 0 200px rgba(255, 215, 0, 0.1); }
-    }
-    .logo-emblem .hc-text {
+    .main-title {
         font-size: 3.5rem;
         font-weight: 900;
-        letter-spacing: -4px;
-        background: linear-gradient(135deg, #0044aa, #3399ff, #ffcc00, #d21034);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        text-shadow: 0 0 30px rgba(0, 68, 170, 0.3);
-        font-family: 'Inter', sans-serif;
-        transform: rotate(-2deg);
-        filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.2));
-    }
-    /* Rotating network nodes */
-    .nodes-container {
-        position: absolute;
-        top: -20px;
-        left: -20px;
-        width: calc(100% + 40px);
-        height: calc(100% + 40px);
-        pointer-events: none;
-        animation: rotateNodes 8s linear infinite;
-    }
-    @keyframes rotateNodes {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
-    .node {
-        position: absolute;
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: #00ff88;
-        box-shadow: 0 0 15px #00ff88, 0 0 30px #00ff88;
-        animation: nodePulse 1.5s ease-in-out infinite alternate;
-    }
-    .node:nth-child(1) { top: 0%; left: 50%; animation-delay: 0s; }
-    .node:nth-child(2) { top: 25%; left: 95%; animation-delay: 0.2s; }
-    .node:nth-child(3) { top: 75%; left: 95%; animation-delay: 0.4s; }
-    .node:nth-child(4) { top: 100%; left: 50%; animation-delay: 0.6s; }
-    .node:nth-child(5) { top: 75%; left: 5%; animation-delay: 0.8s; }
-    .node:nth-child(6) { top: 25%; left: 5%; animation-delay: 1s; }
-    .node:nth-child(7) { top: 50%; left: 100%; animation-delay: 0.3s; }
-    .node:nth-child(8) { top: 50%; left: 0%; animation-delay: 0.7s; }
-    @keyframes nodePulse {
-        0% { opacity: 0.4; transform: scale(0.8); }
-        100% { opacity: 1; transform: scale(1.3); }
-    }
-    /* Connecting lines (circular ring with glow) */
-    .ring-line {
-        position: absolute;
-        top: -10px;
-        left: -10px;
-        width: calc(100% + 20px);
-        height: calc(100% + 20px);
-        border-radius: 50%;
-        border: 1px solid rgba(0, 255, 136, 0.15);
-        box-shadow: 0 0 20px rgba(0, 255, 136, 0.05);
-        animation: ringPulse 4s ease-in-out infinite;
-    }
-    .ring-line:nth-child(2) {
-        top: 0px;
-        left: 0px;
-        width: 100%;
-        height: 100%;
-        border-color: rgba(0, 255, 136, 0.08);
-        animation-delay: 2s;
-    }
-    @keyframes ringPulse {
-        0%, 100% { opacity: 0.3; }
-        50% { opacity: 0.8; }
-    }
-    /* Light trails (bokeh particles) */
-    .bokeh {
-        position: absolute;
-        border-radius: 50%;
-        background: rgba(255, 215, 0, 0.15);
-        filter: blur(8px);
-        animation: bokehFloat 6s ease-in-out infinite alternate;
-    }
-    .bokeh:nth-child(1) { width: 30px; height: 30px; top: 10%; left: 10%; }
-    .bokeh:nth-child(2) { width: 20px; height: 20px; bottom: 15%; right: 15%; animation-delay: 2s; }
-    .bokeh:nth-child(3) { width: 40px; height: 40px; top: 40%; left: 80%; animation-delay: 4s; }
-    @keyframes bokehFloat {
-        0% { transform: translate(0, 0) scale(1); opacity: 0.3; }
-        100% { transform: translate(10px, -20px) scale(1.2); opacity: 0.6; }
-    }
-    /* Logo text below */
-    .logo-text {
-        font-size: 0.8rem;
-        font-weight: 700;
-        letter-spacing: 2px;
-        color: #004488;
-        margin-top: 8px;
         text-align: center;
-        text-shadow: 0 0 20px rgba(0, 68, 170, 0.1);
-        background: linear-gradient(90deg, #0044aa, #d21034);
+        background: linear-gradient(135deg, #0044aa, #0066cc, #3399ff);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
+        padding: 20px 0;
+        text-shadow: 0 0 60px rgba(0, 68, 170, 0.2);
+        animation: glow 3s ease-in-out infinite;
     }
-    
-    /* Section headers */
+    @keyframes glow {
+        0%, 100% { filter: drop-shadow(0 0 20px rgba(0, 68, 170, 0.15)); }
+        50% { filter: drop-shadow(0 0 40px rgba(0, 68, 170, 0.3)); }
+    }
+    .sub-title {
+        color: #004488;
+        font-size: 1.2rem;
+        text-align: center;
+        font-weight: 600;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        margin-bottom: 30px;
+    }
     .section-title {
         color: #004488;
         font-size: 2rem;
@@ -776,16 +656,14 @@ st.markdown("""
         transform: scale(1.05) !important;
         box-shadow: 0 5px 30px rgba(0, 68, 170, 0.3) !important;
     }
-    .about-quote {
-        font-size: 1.3rem;
-        font-style: italic;
-        color: #004488;
-        text-align: center;
-        padding: 20px;
-        background: rgba(255, 255, 255, 0.4);
-        border-radius: 12px;
-        border-left: 4px solid #3399ff;
-        margin: 15px 0;
+    .stRadio label, .stRadio div {
+        color: #1a2b4c !important;
+    }
+    .stMarkdown {
+        color: #1a2b4c !important;
+    }
+    .stCaption {
+        color: #1a2b4c !important;
     }
     .media-item {
         background: rgba(255, 255, 255, 0.7);
@@ -797,6 +675,17 @@ st.markdown("""
     .media-item img {
         border-radius: 8px;
         max-width: 100%;
+    }
+    .about-quote {
+        font-size: 1.3rem;
+        font-style: italic;
+        color: #004488;
+        text-align: center;
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.4);
+        border-radius: 12px;
+        border-left: 4px solid #3399ff;
+        margin: 15px 0;
     }
     .dashboard-intro {
         font-size: 1.1rem;
@@ -1344,11 +1233,54 @@ def media_content():
     else:
         st.info(get_text("media_empty", lang))
 
+# ---------- ABOUT HCC SECTION (with AI Voice) ----------
 def about_content():
     st.markdown(f'<h2 id="about" class="section-title">{get_text("about_title", lang)}</h2>', unsafe_allow_html=True)
+    
+    # ---- AI Voice Button ----
+    # Get the appropriate voice script for the selected language
+    if lang == "fr":
+        voice_script = get_text("about_voice_script_fr", lang)
+        voice_lang = "fr"
+    elif lang == "es":
+        voice_script = get_text("about_voice_script_es", lang)
+        voice_lang = "es"
+    else:
+        voice_script = get_text("about_voice_script_en", lang)
+        voice_lang = "en"
+    
+    # Voice button
+    if st.button(get_text('play_voice_label', lang), use_container_width=True):
+        with st.spinner("🔊 Generating voice..."):
+            try:
+                from gtts import gTTS
+                tts = gTTS(text=voice_script, lang=voice_lang, slow=False)
+                audio_bytes = BytesIO()
+                tts.write_to_fp(audio_bytes)
+                audio_bytes.seek(0)
+                
+                audio_base64 = base64.b64encode(audio_bytes.read()).decode()
+                audio_html = f"""
+                    <audio autoplay controls preload="auto" style="width: 100%; margin-top: 10px;">
+                        <source src="data:audio/mp3;base64,{audio_base64}" type="audio/mp3">
+                        Your browser does not support the audio element.
+                    </audio>
+                    <p style="color: #aaaaaa; font-size: 0.8rem;">
+                        💡 If the audio doesn't play automatically, click the play button above.
+                    </p>
+                """
+                st.markdown(audio_html, unsafe_allow_html=True)
+                st.success("✅ Voice is playing!")
+            except Exception as e:
+                st.error(f"❌ Error generating voice: {e}")
+                st.info("💡 Please ensure you have an internet connection for gTTS to work.")
+    
+    st.markdown("---")
+    
+    # ---- About content ----
     st.markdown(f"""
     <div class="culture-card">
-        <h3>🏷️ HCC – Haiti Culture Connection</h3>
+        <h3>🏷️ {get_text("nav_about", lang)}</h3>
         <p>{get_text("about_intro", lang)}</p>
         <p>{get_text("about_mission", lang)}</p>
         <p>{get_text("about_connection", lang)}</p>
