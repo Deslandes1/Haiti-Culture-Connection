@@ -120,7 +120,7 @@ TEXTS = {
     "about_whatsapp": {"en": "WhatsApp: +18094177808", "fr": "WhatsApp: +18094177808", "es": "WhatsApp: +18094177808"},
     "about_social": {"en": "Follow everywhere on social media @HCC", "fr": "Suivez partout sur les réseaux sociaux @HCC", "es": "Sigue en todas partes en redes sociales @HCC"},
 
-    # ---------- ULTRA‑SHORT VOICE SCRIPTS (single sentence) ----------
+    # ---------- Voice scripts (short, plain text) ----------
     "about_voice_script_en": {
         "en": "Welcome to Haiti Culture Connection. HCC connects Haitian artists and promotes our culture worldwide."
     },
@@ -172,17 +172,11 @@ LOGO_PROMPT = """Based on the logo in image_0.png, the central 3D 'HC' letterfor
 How to use this prompt:
 Copy and paste the text above into your preferred image generation tool (like Midjourney, DALL-E 3, or Stable Diffusion). If using DALL-E 3, you can just provide the image and this prompt directly. For Midjourney, you will need to use the --v 6.0 flag or later. The prompt is designed to interpret the elements from the original image into a dynamic, high-production-value graphic."""
 
-# ---------- Helper function ----------
+# ---------- Helper functions ----------
 def get_text(key, lang):
     return TEXTS[key].get(lang, TEXTS[key].get("en", ""))
 
-# ---------- Robust TTS function with fallback ----------
 def generate_speech(text, lang):
-    """
-    Tries gTTS first; if that fails, uses a direct call to Google Translate TTS API.
-    Returns a BytesIO object containing the audio data.
-    """
-    # Try gTTS
     try:
         from gtts import gTTS
         tts = gTTS(text=text, lang=lang, slow=False)
@@ -192,29 +186,58 @@ def generate_speech(text, lang):
         return audio_bytes
     except Exception as e:
         st.warning(f"gTTS failed ({e}). Trying fallback...")
+        try:
+            url = "https://translate.google.com/translate_tts"
+            params = {"ie": "UTF-8", "q": text, "tl": lang, "client": "tw-ob", "ttsspeed": "1.0"}
+            headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
+            response = requests.get(url, params=params, headers=headers, timeout=15)
+            if response.status_code == 200 and len(response.content) > 100:
+                audio_bytes = BytesIO(response.content)
+                audio_bytes.seek(0)
+                return audio_bytes
+            else:
+                raise Exception(f"Fallback API returned status {response.status_code}")
+        except Exception as e2:
+            raise Exception(f"Both TTS methods failed. Last error: {e2}")
 
-    # Fallback: direct HTTP request to Google TTS
-    try:
-        url = "https://translate.google.com/translate_tts"
-        params = {
-            "ie": "UTF-8",
-            "q": text,
-            "tl": lang,
-            "client": "tw-ob",
-            "ttsspeed": "1.0"
-        }
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
-        }
-        response = requests.get(url, params=params, headers=headers, timeout=15)
-        if response.status_code == 200 and len(response.content) > 100:
-            audio_bytes = BytesIO(response.content)
-            audio_bytes.seek(0)
-            return audio_bytes
+# ---------- Media display helper ----------
+def display_media_item(item, lang):
+    """Display a single media item (image or link) with its caption."""
+    if item["type"] == "image":
+        try:
+            img = Image.open(BytesIO(item["data"]))
+            st.image(img, caption=item["caption"], use_column_width=True)
+        except:
+            st.warning("Image cannot be displayed")
+    else:
+        st.markdown(f"**{item['caption'] if item['caption'] else get_text('media_youtube', lang)}**")
+        link = item["link"]
+        if "youtube.com" in link or "youtu.be" in link:
+            vid_match = re.search(r"(?:v=|\/)([0-9A-Za-z_-]{11})(?:[&?]|$)", link)
+            if vid_match:
+                vid = vid_match.group(1)
+                st.markdown(f'<iframe width="100%" height="315" src="https://www.youtube.com/embed/{vid}" frameborder="0" allowfullscreen></iframe>', unsafe_allow_html=True)
+            else:
+                st.markdown(f'<a href="{link}" target="_blank">{link}</a>', unsafe_allow_html=True)
         else:
-            raise Exception(f"Fallback API returned status {response.status_code} or empty response.")
-    except Exception as e:
-        raise Exception(f"Both TTS methods failed. Last error: {e}")
+            st.markdown(f'<a href="{link}" target="_blank">{link}</a>', unsafe_allow_html=True)
+
+def display_media_feed(category_filter=None, lang="en"):
+    """Display all media items, optionally filtered by category."""
+    if not st.session_state.media_items:
+        st.info(get_text("media_empty", lang))
+        return
+    filtered = [item for item in st.session_state.media_items if category_filter is None or item.get("category") == category_filter]
+    if not filtered:
+        st.info("No media items in this category.")
+        return
+    for idx, item in enumerate(filtered):
+        with st.container():
+            st.markdown(f'<div class="media-item">', unsafe_allow_html=True)
+            display_media_item(item, lang)
+            st.markdown('</div>', unsafe_allow_html=True)
+            if idx < len(filtered) - 1:
+                st.markdown("---")
 
 # ---------- Session state ----------
 if 'lang' not in st.session_state:
@@ -323,16 +346,12 @@ st.markdown("""
     .logo-container { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px 0; position: relative; perspective: 800px; animation: floatLogo 6s ease-in-out infinite; }
     @keyframes floatLogo { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
 
-    /* Outer wrapper – no rotation, just position */
     .logo-emblem {
         position: relative;
         width: 120px;
         height: 120px;
         border-radius: 50%;
-        /* background, border, box-shadow moved to spin-container */
     }
-
-    /* The spinning container – holds all rotating elements (circle, nodes, glints, trail) */
     .spin-container {
         position: absolute;
         top: 0;
@@ -348,7 +367,6 @@ st.markdown("""
         overflow: visible;
         z-index: 1;
     }
-
     @keyframes spinWithBlur {
         0% { transform: rotate(0deg) scale(1); filter: blur(0px); }
         20% { filter: blur(2px); }
@@ -356,24 +374,18 @@ st.markdown("""
         70% { filter: blur(2px); }
         100% { transform: rotate(360deg) scale(1); filter: blur(0px); }
     }
-
-    /* Shine overlay – rotates with the container */
     .spin-container::after {
         content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%;
         background: linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0) 30%, rgba(255,255,255,0.3) 60%, rgba(255,255,255,0) 80%, rgba(255,215,0,0.2) 100%);
         pointer-events: none; z-index: 5; mix-blend-mode: overlay; animation: shineMove 6s linear infinite;
     }
     @keyframes shineMove { 0% { background-position: 0% 0%; } 100% { background-position: 100% 100%; } }
-
-    /* Motion trail (ghost) – rotates with the container */
     .spin-container::before {
         content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%;
         background: inherit; border: inherit; box-shadow: inherit; z-index: -1;
         animation: trailSpin 4s ease-in-out infinite; opacity: 0.25; transform: scale(0.9) rotate(30deg); filter: blur(2px);
     }
     @keyframes trailSpin { 0% { transform: scale(0.9) rotate(30deg); opacity: 0.25; } 50% { transform: scale(1.1) rotate(-30deg); opacity: 0.1; } 100% { transform: scale(0.9) rotate(30deg); opacity: 0.25; } }
-
-    /* Glints – rotate with container */
     .glint {
         position: absolute; font-size: 0.8rem; color: white; text-shadow: 0 0 10px rgba(255,255,255,0.8), 0 0 20px rgba(255,255,255,0.4); z-index: 6;
         animation: glintPulse 2s ease-in-out infinite alternate;
@@ -383,8 +395,6 @@ st.markdown("""
     .glint:nth-child(3) { bottom: -5px; left: 40%; animation-delay: 1s; }
     .glint:nth-child(4) { top: 20%; left: -10px; animation-delay: 1.5s; }
     @keyframes glintPulse { 0% { opacity: 0.3; transform: scale(0.8) rotate(0deg); } 100% { opacity: 1; transform: scale(1.2) rotate(20deg); } }
-
-    /* Network ring and nodes – inside spin-container */
     .network-ring {
         position: absolute; top: -15px; left: -15px; width: calc(100% + 30px); height: calc(100% + 30px);
         pointer-events: none; z-index: 1; animation: rotateNodes 6s linear infinite;
@@ -404,7 +414,6 @@ st.markdown("""
     .node:nth-child(7) { top: 50%; left: 100%; animation-delay: 0.3s; }
     .node:nth-child(8) { top: 50%; left: 0%; animation-delay: 0.7s; }
     @keyframes nodeGlow { 0% { opacity: 0.4; transform: scale(0.8); } 100% { opacity: 1; transform: scale(1.2); } }
-
     .ring-line {
         position: absolute; top: -10px; left: -10px; width: calc(100% + 20px); height: calc(100% + 20px);
         border-radius: 50%; border: 1px dashed rgba(0, 204, 136, 0.3);
@@ -413,8 +422,6 @@ st.markdown("""
     }
     .ring-line:nth-child(2) { top: 0px; left: 0px; width: 100%; height: 100%; border-color: rgba(0, 204, 136, 0.15); animation-delay: 2s; }
     @keyframes ringPulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.8; } }
-
-    /* STATIC TEXT – positioned on top, does not rotate */
     .hc-text {
         position: absolute;
         top: 50%;
@@ -431,7 +438,7 @@ st.markdown("""
         line-height: 0.9;
         text-shadow: 0 0 20px rgba(0,68,170,0.5), 0 0 40px rgba(255,215,0,0.3);
         filter: drop-shadow(0 0 10px rgba(255,215,0,0.2));
-        pointer-events: none;  /* allow clicks to pass through */
+        pointer-events: none;
     }
     .hc-text .h-letter {
         color: #0044aa;
@@ -447,11 +454,8 @@ st.markdown("""
         text-shadow: none;
         filter: drop-shadow(0 0 8px rgba(255,200,0,0.4));
     }
-    /* Adjust spacing for three letters */
     .hc-text .h-letter { margin-bottom: -0.15em; }
     .hc-text .c-letter:first-of-type { margin-top: -0.2em; }
-
-    /* The "HAITI CULTURE CONNECTION" text below the emblem – static */
     .logo-text {
         font-size: 0.75rem;
         font-weight: 700;
@@ -469,8 +473,6 @@ st.markdown("""
     }
     @keyframes rippleText { 0% { transform: scaleY(1) skewX(0deg); } 50% { transform: scaleY(1.08) skewX(2deg); } 100% { transform: scaleY(1) skewX(0deg); } }
     @keyframes lightSweep { 0% { background-position: 0% 0%; } 100% { background-position: 200% 0%; } }
-
-    /* Compact audio player */
     .compact-audio {
         display: flex; align-items: center; gap: 8px; padding: 4px 12px;
         background: rgba(255,255,255,0.4); border-radius: 30px; margin: 4px 0 8px 0;
@@ -490,7 +492,6 @@ with col1:
     st.markdown("""
     <div class="logo-container">
         <div class="logo-emblem">
-            <!-- Spinning elements (circle, nodes, glints, trails) -->
             <div class="spin-container">
                 <div class="network-ring">
                     <div class="node"></div><div class="node"></div>
@@ -505,7 +506,6 @@ with col1:
                 <div class="glint">✦</div>
                 <div class="glint">✦</div>
             </div>
-            <!-- Static HCC text -->
             <div class="hc-text">
                 <span class="h-letter">H</span>
                 <span class="c-letter">C</span>
@@ -567,7 +567,6 @@ with col3:
         label_visibility="collapsed",
         on_change=on_menu_change
     )
-    # Voice button
     if st.button(get_text('voice_button_label', lang), key="voice_button_top", use_container_width=False):
         if lang == "fr":
             voice_script = get_text("about_voice_script_fr", lang)
@@ -578,12 +577,10 @@ with col3:
         else:
             voice_script = get_text("about_voice_script_en", lang)
             voice_lang = "en"
-
         if not voice_script:
             voice_script = get_text("about_voice_script_en", "en")
             voice_lang = "en"
             st.info("💡 Using English voice as fallback.")
-
         with st.spinner("🔊 Generating voice..."):
             try:
                 audio_bytes = generate_speech(voice_script, voice_lang)
@@ -594,8 +591,6 @@ with col3:
             except Exception as e:
                 st.error(f"❌ Voice generation error: {str(e)}")
                 st.info("💡 Please try again later. If the problem persists, the TTS service may be temporarily unavailable.")
-
-    # Owner toggle
     if st.button(get_text('owner_toggle_button', lang), key="owner_toggle_btn", use_container_width=False):
         st.session_state.show_owner_panel = not st.session_state.show_owner_panel
         st.rerun()
@@ -615,7 +610,7 @@ if st.session_state.show_voice_player and st.session_state.voice_audio_base64:
     """
     st.markdown(audio_html, unsafe_allow_html=True)
 
-# ---------- Owner Panel (unchanged) ----------
+# ---------- Owner Panel ----------
 if st.session_state.show_owner_panel:
     with st.container():
         st.markdown('<div class="owner-panel">', unsafe_allow_html=True)
@@ -646,6 +641,19 @@ if st.session_state.show_owner_panel:
 
             st.markdown("---")
 
+            # Category options for media
+            category_options = [
+                ("Home", "home"),
+                ("History", "history"),
+                ("Music", "music"),
+                ("Art", "art"),
+                ("Cuisine", "cuisine"),
+                ("Language", "language"),
+                ("Festivals", "festivals"),
+                ("Media", "media"),
+                ("About", "about")
+            ]
+
             # Image upload
             st.markdown(f"### {get_text('media_add_image', lang)}")
             col1, col2 = st.columns([2, 1])
@@ -653,14 +661,18 @@ if st.session_state.show_owner_panel:
                 image_file = st.file_uploader("", type=["png", "jpg", "jpeg", "gif", "webp"], key="image_upload_owner")
             with col2:
                 image_caption = st.text_input(get_text('media_image_caption', lang), key="image_caption_owner")
+            image_category = st.selectbox("Category", [opt[0] for opt in category_options], key="image_category_owner")
             if st.button(get_text('media_add_image_button', lang), key="add_image_owner", use_container_width=True):
                 if image_file is not None:
                     img_bytes = image_file.read()
+                    # map display name to key
+                    cat_key = next(opt[1] for opt in category_options if opt[0] == image_category)
                     st.session_state.media_items.append({
                         "type": "image",
                         "data": img_bytes,
                         "caption": image_caption.strip(),
-                        "filename": image_file.name
+                        "filename": image_file.name,
+                        "category": cat_key
                     })
                     st.success("✅ Image added!")
                     st.rerun()
@@ -676,12 +688,15 @@ if st.session_state.show_owner_panel:
                 link = st.text_input("", key="media_link_owner")
             with col2:
                 caption = st.text_input(get_text('media_link_caption', lang), key="media_caption_owner")
+            link_category = st.selectbox("Category", [opt[0] for opt in category_options], key="link_category_owner")
             if st.button(get_text('media_add_link_button', lang), key="add_link_owner", use_container_width=True):
                 if link.strip():
+                    cat_key = next(opt[1] for opt in category_options if opt[0] == link_category)
                     st.session_state.media_items.append({
                         "type": "link",
                         "link": link.strip(),
-                        "caption": caption.strip()
+                        "caption": caption.strip(),
+                        "category": cat_key
                     })
                     st.success("✅ Link added!")
                     st.rerun()
@@ -707,7 +722,7 @@ if st.session_state.show_owner_panel:
                         else:
                             st.markdown(f"**{item['caption'] if item['caption'] else 'Link'}**")
                             st.markdown(f'<a href="{item["link"]}" target="_blank">{item["link"]}</a>', unsafe_allow_html=True)
-                        
+                        st.caption(f"Category: {item.get('category', 'general')}")
                         if st.session_state.editing_index == idx:
                             if item["type"] == "image":
                                 new_caption = st.text_input(get_text('edit_caption_label', lang), value=item["caption"], key=f"edit_caption_{idx}")
@@ -755,7 +770,15 @@ st.markdown(f'<div class="welcome-banner">🏠 {get_text("welcome_banner", lang)
 st.markdown(f'<h1 style="text-align:center; color:#004488; font-size:2.5rem; margin-top:0;">{get_text("dashboard_title", lang)}</h1>', unsafe_allow_html=True)
 st.markdown(f'<p class="dashboard-intro">✨ {get_text("sub_title", lang)} ✨</p>', unsafe_allow_html=True)
 
-# ---------- Section render functions (unchanged) ----------
+# ---------- Media Feed (always shown on dashboard) ----------
+st.markdown("---")
+st.markdown(f"<h3 style='color:#004488;'>📺 Latest Media</h3>", unsafe_allow_html=True)
+# If a section is selected, filter feed to that category; otherwise show all
+filter_cat = st.session_state.selected_section if st.session_state.selected_section not in [None, "media", "about"] else None
+display_media_feed(category_filter=filter_cat, lang=lang)
+st.markdown("---")
+
+# ---------- Section render functions ----------
 def render_section(section_key, title_key, content_func):
     if st.session_state.selected_section is None or st.session_state.selected_section == section_key:
         if st.session_state.selected_section == section_key:
@@ -765,6 +788,11 @@ def render_section(section_key, title_key, content_func):
                 st.rerun()
             st.markdown('</div>', unsafe_allow_html=True)
         content_func()
+        # After static content, show related media if a section is selected
+        if st.session_state.selected_section == section_key:
+            st.markdown("---")
+            st.markdown(f"<h4 style='color:#004488;'>📺 Media in {get_text('nav_'+section_key, lang)}</h4>", unsafe_allow_html=True)
+            display_media_feed(category_filter=section_key, lang=lang)
 
 def home_content():
     st.markdown(f'<h2 id="home" class="section-title">{get_text("home_title", lang)}</h2>', unsafe_allow_html=True)
@@ -1007,40 +1035,11 @@ def media_content():
         <p>{get_text("media_subtitle", lang)}</p>
     </div>
     """, unsafe_allow_html=True)
-    if st.session_state.media_items:
-        for idx, item in enumerate(st.session_state.media_items):
-            with st.container():
-                st.markdown(f'<div class="media-item">', unsafe_allow_html=True)
-                if item["type"] == "image":
-                    try:
-                        img = Image.open(BytesIO(item["data"]))
-                        st.image(img, caption=item["caption"], use_column_width=True)
-                    except:
-                        st.warning("Image cannot be displayed")
-                else:
-                    st.markdown(f"**{item['caption'] if item['caption'] else get_text('media_youtube', lang)}**")
-                    if "youtube.com" in item['link'] or "youtu.be" in item['link']:
-                        vid_match = re.search(r"(?:v=|\/)([0-9A-Za-z_-]{11})(?:[&?]|$)", item['link'])
-                        if vid_match:
-                            vid = vid_match.group(1)
-                            st.markdown(f'<iframe width="100%" height="315" src="https://www.youtube.com/embed/{vid}" frameborder="0" allowfullscreen></iframe>', unsafe_allow_html=True)
-                        else:
-                            st.markdown(f'<a href="{item["link"]}" target="_blank">{item["link"]}</a>', unsafe_allow_html=True)
-                    else:
-                        st.markdown(f'<a href="{item["link"]}" target="_blank">{item["link"]}</a>', unsafe_allow_html=True)
-                if st.session_state.media_authenticated:
-                    if st.button(f"{get_text('media_remove', lang)} {idx+1}", key=f"remove_{idx}_dash"):
-                        del st.session_state.media_items[idx]
-                        st.rerun()
-                st.markdown('</div>', unsafe_allow_html=True)
-                st.markdown("---")
-    else:
-        st.info(get_text("media_empty", lang))
+    # Show all media items (unfiltered) in the Media section
+    display_media_feed(category_filter=None, lang=lang)
 
 def about_content():
     st.markdown(f'<h2 id="about" class="section-title">{get_text("about_title", lang)}</h2>', unsafe_allow_html=True)
-    # Voice button removed – only top bar voice remains
-
     st.markdown(f"""
     <div class="culture-card">
         <h3>🏷️ {get_text("nav_about", lang)}</h3>
@@ -1078,7 +1077,7 @@ def about_content():
     </div>
     """, unsafe_allow_html=True)
 
-    # ---------- Logo Design Prompt Section ----------
+    # Logo Design Prompt
     st.markdown("---")
     st.markdown("""
     <div class="culture-card">
