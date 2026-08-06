@@ -2,6 +2,7 @@ import streamlit as st
 from PIL import Image
 import re
 import base64
+import requests
 from io import BytesIO
 
 # ---------- Page Config ----------
@@ -119,15 +120,15 @@ TEXTS = {
     "about_whatsapp": {"en": "WhatsApp: +18094177808", "fr": "WhatsApp: +18094177808", "es": "WhatsApp: +18094177808"},
     "about_social": {"en": "Follow everywhere on social media @HCC", "fr": "Suivez partout sur les réseaux sociaux @HCC", "es": "Sigue en todas partes en redes sociales @HCC"},
 
-    # ---------- VERY SHORT VOICE SCRIPTS (under 50 words, plain text) ----------
+    # ---------- ULTRA‑SHORT VOICE SCRIPTS (single sentence) ----------
     "about_voice_script_en": {
-        "en": "Welcome to Haiti Culture Connection. HCC is the first label in the history of HMI, a groundbreaking initiative for Haiti's productive youth. With a committed team, HCC aims to establish a direct connection between all Haitian artists. Culture is the most tangible proof of the existence of all civilizations. CEO: Jean Charles. Follow us on social media at HCC."
+        "en": "Welcome to Haiti Culture Connection. HCC connects Haitian artists and promotes our culture worldwide."
     },
     "about_voice_script_fr": {
-        "fr": "Bienvenue à Haiti Culture Connection. HCC est le premier label dans l'histoire de HMI, une initiative révolutionnaire pour la jeunesse productive haïtienne. Avec une équipe engagée, HCC vise à établir une connexion directe entre tous les artistes haïtiens. La culture est la preuve la plus tangible de l'existence de toutes civilisations. PDG: Jean Charles. Suivez-nous sur les réseaux sociaux à HCC."
+        "fr": "Bienvenue à Haiti Culture Connection. HCC connecte les artistes haïtiens et promeut notre culture dans le monde."
     },
     "about_voice_script_es": {
-        "es": "Bienvenido a Haiti Culture Connection. HCC es la primera etiqueta en la historia de HMI, una iniciativa pionera para la juventud productiva haitiana. Con un equipo comprometido, HCC busca establecer una conexión directa entre todos los artistas haitianos. La cultura es la prueba más tangible de la existencia de todas las civilizaciones. CEO: Jean Charles. Síguenos en redes sociales en HCC."
+        "es": "Bienvenido a Haiti Culture Connection. HCC conecta a artistas haitianos y promueve nuestra cultura en todo el mundo."
     },
 
     # Media
@@ -173,8 +174,47 @@ Copy and paste the text above into your preferred image generation tool (like Mi
 
 # ---------- Helper function ----------
 def get_text(key, lang):
-    # Safely get translation; fallback to "en" if available, else empty string
     return TEXTS[key].get(lang, TEXTS[key].get("en", ""))
+
+# ---------- Robust TTS function with fallback ----------
+def generate_speech(text, lang):
+    """
+    Tries gTTS first; if that fails, uses a direct call to Google Translate TTS API.
+    Returns a BytesIO object containing the audio data.
+    """
+    # Try gTTS
+    try:
+        from gtts import gTTS
+        tts = gTTS(text=text, lang=lang, slow=False)
+        audio_bytes = BytesIO()
+        tts.write_to_fp(audio_bytes)
+        audio_bytes.seek(0)
+        return audio_bytes
+    except Exception as e:
+        st.warning(f"gTTS failed ({e}). Trying fallback...")
+
+    # Fallback: direct HTTP request to Google TTS
+    try:
+        url = "https://translate.google.com/translate_tts"
+        params = {
+            "ie": "UTF-8",
+            "q": text,
+            "tl": lang,
+            "client": "tw-ob",
+            "ttsspeed": "1.0"
+        }
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+        }
+        response = requests.get(url, params=params, headers=headers, timeout=15)
+        if response.status_code == 200 and len(response.content) > 100:
+            audio_bytes = BytesIO(response.content)
+            audio_bytes.seek(0)
+            return audio_bytes
+        else:
+            raise Exception(f"Fallback API returned status {response.status_code} or empty response.")
+    except Exception as e:
+        raise Exception(f"Both TTS methods failed. Last error: {e}")
 
 # ---------- Session state ----------
 if 'lang' not in st.session_state:
@@ -217,7 +257,7 @@ def on_menu_change():
     }
     st.session_state.selected_section = menu_map.get(selected, None)
 
-# ---------- CSS (Light Blue Theme + Metallic Logo) ----------
+# ---------- CSS (unchanged) ----------
 st.markdown("""
     <style>
     .stApp { background: #e6f0ff !important; }
@@ -529,7 +569,6 @@ with col3:
     )
     # Voice button
     if st.button(get_text('voice_button_label', lang), key="voice_button_top", use_container_width=False):
-        # Select the correct voice script based on language; fallback to English if not found
         if lang == "fr":
             voice_script = get_text("about_voice_script_fr", lang)
             voice_lang = "fr"
@@ -540,7 +579,6 @@ with col3:
             voice_script = get_text("about_voice_script_en", lang)
             voice_lang = "en"
 
-        # If script is empty, use English as fallback
         if not voice_script:
             voice_script = get_text("about_voice_script_en", "en")
             voice_lang = "en"
@@ -548,11 +586,7 @@ with col3:
 
         with st.spinner("🔊 Generating voice..."):
             try:
-                from gtts import gTTS
-                tts = gTTS(text=voice_script, lang=voice_lang, slow=False)
-                audio_bytes = BytesIO()
-                tts.write_to_fp(audio_bytes)
-                audio_bytes.seek(0)
+                audio_bytes = generate_speech(voice_script, voice_lang)
                 audio_base64 = base64.b64encode(audio_bytes.read()).decode()
                 st.session_state.voice_audio_base64 = audio_base64
                 st.session_state.show_voice_player = True
@@ -560,6 +594,7 @@ with col3:
             except Exception as e:
                 st.error(f"❌ Voice generation error: {str(e)}")
                 st.info("💡 Please try again later. If the problem persists, the TTS service may be temporarily unavailable.")
+
     # Owner toggle
     if st.button(get_text('owner_toggle_button', lang), key="owner_toggle_btn", use_container_width=False):
         st.session_state.show_owner_panel = not st.session_state.show_owner_panel
@@ -580,7 +615,7 @@ if st.session_state.show_voice_player and st.session_state.voice_audio_base64:
     """
     st.markdown(audio_html, unsafe_allow_html=True)
 
-# ---------- Owner Panel ----------
+# ---------- Owner Panel (unchanged) ----------
 if st.session_state.show_owner_panel:
     with st.container():
         st.markdown('<div class="owner-panel">', unsafe_allow_html=True)
@@ -720,7 +755,7 @@ st.markdown(f'<div class="welcome-banner">🏠 {get_text("welcome_banner", lang)
 st.markdown(f'<h1 style="text-align:center; color:#004488; font-size:2.5rem; margin-top:0;">{get_text("dashboard_title", lang)}</h1>', unsafe_allow_html=True)
 st.markdown(f'<p class="dashboard-intro">✨ {get_text("sub_title", lang)} ✨</p>', unsafe_allow_html=True)
 
-# ---------- Section render functions ----------
+# ---------- Section render functions (unchanged) ----------
 def render_section(section_key, title_key, content_func):
     if st.session_state.selected_section is None or st.session_state.selected_section == section_key:
         if st.session_state.selected_section == section_key:
