@@ -119,10 +119,16 @@ TEXTS = {
     "about_whatsapp": {"en": "WhatsApp: +18094177808", "fr": "WhatsApp: +18094177808", "es": "WhatsApp: +18094177808"},
     "about_social": {"en": "Follow everywhere on social media @HCC", "fr": "Suivez partout sur les réseaux sociaux @HCC", "es": "Sigue en todas partes en redes sociales @HCC"},
 
-    # ---------- SHORTENED VOICE SCRIPTS (to avoid TTS length errors) ----------
-    "about_voice_script_en": {"en": "Welcome to Haiti Culture Connection. HCC is the first label in the history of HMI, a groundbreaking initiative for Haiti's productive youth. With a committed team, HCC aims to establish a direct connection between all Haitian artists. Culture is the most tangible proof of the existence of all civilizations. CEO: Jean Charles. Follow us on social media @HCC.", "fr": "", "es": ""},
-    "about_voice_script_fr": {"fr": "Bienvenue à Haiti Culture Connection. HCC est le premier label dans l'histoire de HMI, une initiative révolutionnaire pour la jeunesse productive haïtienne. Avec une équipe engagée, HCC vise à établir une connexion directe entre tous les artistes haïtiens. La culture est la preuve la plus tangible de l'existence de toutes civilisations. PDG: Jean Charles. Suivez-nous sur les réseaux sociaux @HCC.", "en": "", "es": ""},
-    "about_voice_script_es": {"es": "Bienvenido a Haiti Culture Connection. HCC es la primera etiqueta en la historia de HMI, una iniciativa pionera para la juventud productiva haitiana. Con un equipo comprometido, HCC busca establecer una conexión directa entre todos los artistas haitianos. La cultura es la prueba más tangible de la existencia de todas las civilizaciones. CEO: Jean Charles. Síguenos en redes sociales @HCC.", "en": "", "fr": ""},
+    # ---------- VERY SHORT VOICE SCRIPTS (under 50 words, plain text) ----------
+    "about_voice_script_en": {
+        "en": "Welcome to Haiti Culture Connection. HCC is the first label in the history of HMI, a groundbreaking initiative for Haiti's productive youth. With a committed team, HCC aims to establish a direct connection between all Haitian artists. Culture is the most tangible proof of the existence of all civilizations. CEO: Jean Charles. Follow us on social media at HCC."
+    },
+    "about_voice_script_fr": {
+        "fr": "Bienvenue à Haiti Culture Connection. HCC est le premier label dans l'histoire de HMI, une initiative révolutionnaire pour la jeunesse productive haïtienne. Avec une équipe engagée, HCC vise à établir une connexion directe entre tous les artistes haïtiens. La culture est la preuve la plus tangible de l'existence de toutes civilisations. PDG: Jean Charles. Suivez-nous sur les réseaux sociaux à HCC."
+    },
+    "about_voice_script_es": {
+        "es": "Bienvenido a Haiti Culture Connection. HCC es la primera etiqueta en la historia de HMI, una iniciativa pionera para la juventud productiva haitiana. Con un equipo comprometido, HCC busca establecer una conexión directa entre todos los artistas haitianos. La cultura es la prueba más tangible de la existencia de todas las civilizaciones. CEO: Jean Charles. Síguenos en redes sociales en HCC."
+    },
 
     # Media
     "media_title": {"en": "📺 Media Gallery", "fr": "📺 Galerie Médias", "es": "📺 Galería de Medios"},
@@ -523,7 +529,7 @@ with col3:
     )
     # Voice button
     if st.button(get_text('voice_button_label', lang), key="voice_button_top", use_container_width=False):
-        # Choose the appropriate shortened voice script
+        # Select the correct voice script based on language; fallback to English if not found
         if lang == "fr":
             voice_script = get_text("about_voice_script_fr", lang)
             voice_lang = "fr"
@@ -533,7 +539,14 @@ with col3:
         else:
             voice_script = get_text("about_voice_script_en", lang)
             voice_lang = "en"
-        with st.spinner("🔊 Generating..."):
+
+        # If script is empty, use English as fallback
+        if not voice_script:
+            voice_script = get_text("about_voice_script_en", "en")
+            voice_lang = "en"
+            st.info("💡 Using English voice as fallback.")
+
+        with st.spinner("🔊 Generating voice..."):
             try:
                 from gtts import gTTS
                 tts = gTTS(text=voice_script, lang=voice_lang, slow=False)
@@ -546,7 +559,7 @@ with col3:
                 st.rerun()
             except Exception as e:
                 st.error(f"❌ Voice generation error: {str(e)}")
-                st.info("💡 Please try again later or use a shorter text.")
+                st.info("💡 Please try again later. If the problem persists, the TTS service may be temporarily unavailable.")
     # Owner toggle
     if st.button(get_text('owner_toggle_button', lang), key="owner_toggle_btn", use_container_width=False):
         st.session_state.show_owner_panel = not st.session_state.show_owner_panel
