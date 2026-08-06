@@ -3,6 +3,8 @@ from PIL import Image
 import re
 import base64
 import requests
+import json
+import os
 from io import BytesIO
 
 # ---------- Page Config ----------
@@ -172,6 +174,36 @@ LOGO_PROMPT = """Based on the logo in image_0.png, the central 3D 'HC' letterfor
 How to use this prompt:
 Copy and paste the text above into your preferred image generation tool (like Midjourney, DALL-E 3, or Stable Diffusion). If using DALL-E 3, you can just provide the image and this prompt directly. For Midjourney, you will need to use the --v 6.0 flag or later. The prompt is designed to interpret the elements from the original image into a dynamic, high-production-value graphic."""
 
+# ---------- Persistent Media Storage ----------
+MEDIA_FILE = "media_data.json"
+
+def load_media():
+    """Load media items from JSON file. Returns list of items."""
+    if os.path.exists(MEDIA_FILE):
+        try:
+            with open(MEDIA_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                # Convert base64 image data back to bytes
+                for item in data:
+                    if item["type"] == "image" and "data_b64" in item:
+                        item["data"] = base64.b64decode(item["data_b64"])
+                return data
+        except:
+            return []
+    return []
+
+def save_media(items):
+    """Save media items to JSON file, converting image bytes to base64 for serialization."""
+    save_items = []
+    for item in items:
+        item_copy = item.copy()
+        if item_copy["type"] == "image" and "data" in item_copy:
+            item_copy["data_b64"] = base64.b64encode(item_copy["data"]).decode("utf-8")
+            del item_copy["data"]
+        save_items.append(item_copy)
+    with open(MEDIA_FILE, "w", encoding="utf-8") as f:
+        json.dump(save_items, f, ensure_ascii=False, indent=2)
+
 # ---------- Helper functions ----------
 def get_text(key, lang):
     return TEXTS[key].get(lang, TEXTS[key].get("en", ""))
@@ -224,10 +256,12 @@ def display_media_item(item, lang):
 
 def display_media_feed(category_filter=None, lang="en"):
     """Display all media items, optionally filtered by category."""
-    if not st.session_state.media_items:
+    # Load from persistent storage
+    media_items = load_media()
+    if not media_items:
         st.info(get_text("media_empty", lang))
         return
-    filtered = [item for item in st.session_state.media_items if category_filter is None or item.get("category") == category_filter]
+    filtered = [item for item in media_items if category_filter is None or item.get("category") == category_filter]
     if not filtered:
         st.info("No media items in this category.")
         return
@@ -242,10 +276,6 @@ def display_media_feed(category_filter=None, lang="en"):
 # ---------- Session state ----------
 if 'lang' not in st.session_state:
     st.session_state.lang = 'en'
-if 'media_items' not in st.session_state:
-    st.session_state.media_items = []
-if 'logo' not in st.session_state:
-    st.session_state.logo = None
 if 'media_authenticated' not in st.session_state:
     st.session_state.media_authenticated = False
 if 'show_owner_panel' not in st.session_state:
@@ -666,13 +696,15 @@ if st.session_state.show_owner_panel:
                 if image_file is not None:
                     img_bytes = image_file.read()
                     cat_key = next(opt[1] for opt in category_options if opt[0] == image_category)
-                    st.session_state.media_items.append({
+                    items = load_media()
+                    items.append({
                         "type": "image",
                         "data": img_bytes,
                         "caption": image_caption.strip(),
                         "filename": image_file.name,
                         "category": cat_key
                     })
+                    save_media(items)
                     st.success("✅ Image added!")
                     st.rerun()
                 else:
@@ -691,12 +723,14 @@ if st.session_state.show_owner_panel:
             if st.button(get_text('media_add_link_button', lang), key="add_link_owner", use_container_width=True):
                 if link.strip():
                     cat_key = next(opt[1] for opt in category_options if opt[0] == link_category)
-                    st.session_state.media_items.append({
+                    items = load_media()
+                    items.append({
                         "type": "link",
                         "link": link.strip(),
                         "caption": caption.strip(),
                         "category": cat_key
                     })
+                    save_media(items)
                     st.success("✅ Link added!")
                     st.rerun()
                 else:
@@ -706,10 +740,11 @@ if st.session_state.show_owner_panel:
 
             # Manage media
             st.markdown(f"### {get_text('manage_media_title', lang)}")
-            if not st.session_state.media_items:
+            items = load_media()
+            if not items:
                 st.info(get_text('no_media_to_manage', lang))
             else:
-                for idx, item in enumerate(st.session_state.media_items):
+                for idx, item in enumerate(items):
                     with st.container():
                         st.markdown(f'<div class="management-item">', unsafe_allow_html=True)
                         if item["type"] == "image":
@@ -728,7 +763,8 @@ if st.session_state.show_owner_panel:
                                 col_save, col_cancel = st.columns(2)
                                 with col_save:
                                     if st.button(get_text('save_label', lang), key=f"save_{idx}"):
-                                        st.session_state.media_items[idx]["caption"] = new_caption
+                                        items[idx]["caption"] = new_caption
+                                        save_media(items)
                                         st.session_state.editing_index = None
                                         st.rerun()
                                 with col_cancel:
@@ -741,8 +777,9 @@ if st.session_state.show_owner_panel:
                                 col_save, col_cancel = st.columns(2)
                                 with col_save:
                                     if st.button(get_text('save_label', lang), key=f"save_link_{idx}"):
-                                        st.session_state.media_items[idx]["caption"] = new_caption
-                                        st.session_state.media_items[idx]["link"] = new_link
+                                        items[idx]["caption"] = new_caption
+                                        items[idx]["link"] = new_link
+                                        save_media(items)
                                         st.session_state.editing_index = None
                                         st.rerun()
                                 with col_cancel:
@@ -757,7 +794,8 @@ if st.session_state.show_owner_panel:
                                     st.rerun()
                             with col2:
                                 if st.button(get_text('delete_label', lang), key=f"del_btn_{idx}"):
-                                    del st.session_state.media_items[idx]
+                                    del items[idx]
+                                    save_media(items)
                                     if st.session_state.editing_index == idx:
                                         st.session_state.editing_index = None
                                     st.rerun()
