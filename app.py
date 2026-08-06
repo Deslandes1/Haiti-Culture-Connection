@@ -665,7 +665,6 @@ if st.session_state.show_owner_panel:
             if st.button(get_text('media_add_image_button', lang), key="add_image_owner", use_container_width=True):
                 if image_file is not None:
                     img_bytes = image_file.read()
-                    # map display name to key
                     cat_key = next(opt[1] for opt in category_options if opt[0] == image_category)
                     st.session_state.media_items.append({
                         "type": "image",
