@@ -122,6 +122,13 @@ TEXTS = {
     "about_whatsapp": {"en": "WhatsApp: +18094177808", "fr": "WhatsApp: +18094177808", "es": "WhatsApp: +18094177808"},
     "about_social": {"en": "Follow everywhere on social media @HCC", "fr": "Suivez partout sur les réseaux sociaux @HCC", "es": "Sigue en todas partes en redes sociales @HCC"},
 
+    # ---------- Video caption (displayed below the video) ----------
+    "video_caption": {
+        "en": "Haiti culture connection<br>The new structural heritage of Haitian culture.<br><br>HCC is a non-profit and apolitical sociocultural organization.<br><br>Culture is the most tangible proof of the existence of all civilizations.<br><br>CEO. Jean Charles RJ.",
+        "fr": "Haiti culture connection<br>Le nouveau patrimoine structurel de la culture haitienne.<br><br>Hcc une organisation socioculturelle à but non lucratif et apolitique.<br><br>La culture est la preuve la plus tangible de l'existence de toutes civilisations.<br><br>CEO. Jean Charles RJ.",
+        "es": "Haiti culture connection<br>El nuevo patrimonio estructural de la cultura haitiana.<br><br>HCC es una organización sociocultural sin fines de lucro y apolítica.<br><br>La cultura es la prueba más tangible de la existencia de todas las civilizaciones.<br><br>CEO. Jean Charles RJ."
+    },
+
     # ---------- Voice scripts (short, plain text) ----------
     "about_voice_script_en": {
         "en": "Welcome to Haiti Culture Connection. HCC connects Haitian artists and promotes our culture worldwide."
@@ -310,7 +317,7 @@ def on_menu_change():
     }
     st.session_state.selected_section = menu_map.get(selected, None)
 
-# ---------- CSS (unchanged except added video styling) ----------
+# ---------- CSS (updated video styles, added caption styling) ----------
 st.markdown("""
     <style>
     .stApp { background: #e6f0ff !important; }
@@ -387,7 +394,7 @@ st.markdown("""
         box-shadow: 0 4px 20px rgba(0,0,0,0.2);
     }
 
-    /* Styling for the text below video, same as previous logo-text */
+    /* Styling for the text below video – title */
     .logo-text {
         font-size: 0.75rem;
         font-weight: 700;
@@ -406,6 +413,22 @@ st.markdown("""
     @keyframes rippleText { 0% { transform: scaleY(1) skewX(0deg); } 50% { transform: scaleY(1.08) skewX(2deg); } 100% { transform: scaleY(1) skewX(0deg); } }
     @keyframes lightSweep { 0% { background-position: 0% 0%; } 100% { background-position: 200% 0%; } }
 
+    /* Video caption – static, smaller, centered */
+    .video-caption {
+        font-size: 0.7rem;
+        text-align: center;
+        color: #1a2b4c;
+        margin-top: 10px;
+        padding: 0 5px;
+        line-height: 1.5;
+        max-width: 200px;
+        word-wrap: break-word;
+    }
+    .video-caption p {
+        margin: 0;
+        padding: 0;
+    }
+
     /* Compact audio player */
     .compact-audio {
         display: flex; align-items: center; gap: 8px; padding: 4px 12px;
@@ -418,7 +441,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# ---------- Top Bar: Logo (replaced with video), Language, Menu, Voice Button, Owner Toggle ----------
+# ---------- Top Bar: Logo (replaced with video) + caption ----------
 lang = st.session_state.lang
 
 col1, col2, col3 = st.columns([1, 2, 1])
@@ -430,8 +453,12 @@ with col1:
             Your browser does not support the video tag.
         </video>
         <div class="logo-text">HAITI CULTURE CONNECTION</div>
-    </div>
+        <div class="video-caption">
     """, unsafe_allow_html=True)
+    # Insert the translated caption with line breaks
+    caption = get_text("video_caption", lang)
+    st.markdown(caption, unsafe_allow_html=True)
+    st.markdown("</div></div>", unsafe_allow_html=True)
 
 with col3:
     st.markdown('<div style="display:flex; justify-content:flex-end; align-items:center; gap:10px; padding-top:10px; flex-wrap:wrap;">', unsafe_allow_html=True)
