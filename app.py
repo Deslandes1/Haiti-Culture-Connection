@@ -129,6 +129,13 @@ TEXTS = {
         "es": "El nuevo patrimonio estructural de la cultura haitiana.<br><br>HCC es una organización sociocultural sin fines de lucro y apolítica.<br><br>La cultura es la prueba más tangible de la existencia de todas las civilizaciones.<br><br>CEO. Jean Charles RJ."
     },
 
+    # ---------- Label for Citadelle image (translated) ----------
+    "citadelle_label": {
+        "en": "Cap Haitian Citadel",
+        "fr": "Citadelle du Cap‑Haïtien",
+        "es": "Ciudadela de Cabo Haitiano"
+    },
+
     # ---------- Voice scripts (short, plain text) ----------
     "about_voice_script_en": {
         "en": "Welcome to Haiti Culture Connection. HCC connects Haitian artists and promotes our culture worldwide."
@@ -394,20 +401,29 @@ st.markdown("""
         box-shadow: 0 4px 20px rgba(0,0,0,0.2);
     }
 
-    /* Citadelle image in center column */
+    /* Citadelle image and label in center column */
     .citadelle-wrapper {
         display: flex;
-        justify-content: center;
+        flex-direction: column;
         align-items: center;
+        justify-content: center;
         padding: 10px 0;
         height: 100%;
     }
     .citadelle-wrapper img {
         max-width: 100%;
-        max-height: 140px;
+        max-height: 130px;
         border-radius: 10px;
         box-shadow: 0 2px 15px rgba(0,0,0,0.1);
         object-fit: cover;
+    }
+    .citadelle-label {
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: #1a2b4c;
+        margin-top: 6px;
+        text-align: center;
+        letter-spacing: 0.5px;
     }
 
     /* Styling for the text below video – title (red gradient) */
@@ -458,10 +474,10 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# ---------- Top Bar: Logo (video), Citadelle (center), Language/Menu (right) ----------
+# ---------- Top Bar: Logo (video), Citadelle (center) with label, Language/Menu (right) ----------
 lang = st.session_state.lang
 
-# Three columns: left (video), center (Citadelle image), right (language + menu)
+# Three columns: left (video), center (Citadelle image + label), right (language + menu)
 col1, col2, col3 = st.columns([1.2, 1.5, 1.8])
 
 with col1:
@@ -479,9 +495,11 @@ with col1:
     st.markdown("</div></div>", unsafe_allow_html=True)
 
 with col2:
-    st.markdown("""
+    citadelle_label = get_text("citadelle_label", lang)
+    st.markdown(f"""
     <div class="citadelle-wrapper">
         <img src="https://raw.githubusercontent.com/Deslandes1/Haiti-Culture-Connection/main/citadellll.png" alt="Citadelle Laferrière">
+        <div class="citadelle-label">{citadelle_label}</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -579,7 +597,7 @@ if st.session_state.show_voice_player and st.session_state.voice_audio_base64:
     """
     st.markdown(audio_html, unsafe_allow_html=True)
 
-# ---------- Owner Panel ----------
+# ---------- Owner Panel (unchanged) ----------
 if st.session_state.show_owner_panel:
     with st.container():
         st.markdown('<div class="owner-panel">', unsafe_allow_html=True)
@@ -754,7 +772,7 @@ filter_cat = st.session_state.selected_section if st.session_state.selected_sect
 display_media_feed(category_filter=filter_cat, lang=lang)
 st.markdown("---")
 
-# ---------- Section render functions ----------
+# ---------- Section render functions (unchanged) ----------
 def render_section(section_key, title_key, content_func):
     if st.session_state.selected_section is None or st.session_state.selected_section == section_key:
         if st.session_state.selected_section == section_key:
