@@ -310,7 +310,7 @@ def on_menu_change():
     }
     st.session_state.selected_section = menu_map.get(selected, None)
 
-# ---------- CSS (unchanged) ----------
+# ---------- CSS (unchanged except added video styling) ----------
 st.markdown("""
     <style>
     .stApp { background: #e6f0ff !important; }
@@ -372,120 +372,22 @@ st.markdown("""
     .back-btn-container { margin: 20px 0; text-align: center; }
     .management-item { background: rgba(255, 255, 255, 0.5); border-radius: 10px; padding: 15px; margin: 10px 0; border: 1px solid rgba(0, 68, 170, 0.1); }
 
-    /* ---------- METALLIC LOGO – LETTERS STATIC, SURROUNDINGS ROTATE ---------- */
-    .logo-container { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px 0; position: relative; perspective: 800px; animation: floatLogo 6s ease-in-out infinite; }
-    @keyframes floatLogo { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
-
-    .logo-emblem {
-        position: relative;
-        width: 120px;
-        height: 120px;
-        border-radius: 50%;
-    }
-    .spin-container {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        border-radius: 50%;
-        background: radial-gradient(circle at 30% 30%, #ffb6c1, #ff69b4, #d87093);
-        border: 4px solid #ff69b4;
-        box-shadow: 0 0 40px rgba(255, 105, 180, 0.4), 0 0 80px rgba(255, 105, 180, 0.2), inset 0 0 30px rgba(255, 215, 0, 0.2);
-        animation: spinWithBlur 4s ease-in-out infinite;
-        transform-style: preserve-3d;
-        overflow: visible;
-        z-index: 1;
-    }
-    @keyframes spinWithBlur {
-        0% { transform: rotate(0deg) scale(1); filter: blur(0px); }
-        20% { filter: blur(2px); }
-        50% { transform: rotate(180deg) scale(1.02); filter: blur(0px); }
-        70% { filter: blur(2px); }
-        100% { transform: rotate(360deg) scale(1); filter: blur(0px); }
-    }
-    .spin-container::after {
-        content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%;
-        background: linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0) 30%, rgba(255,255,255,0.3) 60%, rgba(255,255,255,0) 80%, rgba(255,215,0,0.2) 100%);
-        pointer-events: none; z-index: 5; mix-blend-mode: overlay; animation: shineMove 6s linear infinite;
-    }
-    @keyframes shineMove { 0% { background-position: 0% 0%; } 100% { background-position: 100% 100%; } }
-    .spin-container::before {
-        content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%;
-        background: inherit; border: inherit; box-shadow: inherit; z-index: -1;
-        animation: trailSpin 4s ease-in-out infinite; opacity: 0.25; transform: scale(0.9) rotate(30deg); filter: blur(2px);
-    }
-    @keyframes trailSpin { 0% { transform: scale(0.9) rotate(30deg); opacity: 0.25; } 50% { transform: scale(1.1) rotate(-30deg); opacity: 0.1; } 100% { transform: scale(0.9) rotate(30deg); opacity: 0.25; } }
-    .glint {
-        position: absolute; font-size: 0.8rem; color: white; text-shadow: 0 0 10px rgba(255,255,255,0.8), 0 0 20px rgba(255,255,255,0.4); z-index: 6;
-        animation: glintPulse 2s ease-in-out infinite alternate;
-    }
-    .glint:nth-child(1) { top: -8px; left: 30%; }
-    .glint:nth-child(2) { top: 60%; right: -10px; animation-delay: 0.5s; }
-    .glint:nth-child(3) { bottom: -5px; left: 40%; animation-delay: 1s; }
-    .glint:nth-child(4) { top: 20%; left: -10px; animation-delay: 1.5s; }
-    @keyframes glintPulse { 0% { opacity: 0.3; transform: scale(0.8) rotate(0deg); } 100% { opacity: 1; transform: scale(1.2) rotate(20deg); } }
-    .network-ring {
-        position: absolute; top: -15px; left: -15px; width: calc(100% + 30px); height: calc(100% + 30px);
-        pointer-events: none; z-index: 1; animation: rotateNodes 6s linear infinite;
-    }
-    @keyframes rotateNodes { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    .node {
-        position: absolute; width: 8px; height: 8px; background: #00cc88; border-radius: 50%;
-        box-shadow: 0 0 12px #00cc88, 0 0 24px #00cc88;
-        animation: nodeGlow 2s ease-in-out infinite alternate;
-    }
-    .node:nth-child(1) { top: 0%; left: 50%; }
-    .node:nth-child(2) { top: 25%; left: 95%; animation-delay: 0.2s; }
-    .node:nth-child(3) { top: 75%; left: 95%; animation-delay: 0.4s; }
-    .node:nth-child(4) { top: 100%; left: 50%; animation-delay: 0.6s; }
-    .node:nth-child(5) { top: 75%; left: 5%; animation-delay: 0.8s; }
-    .node:nth-child(6) { top: 25%; left: 5%; animation-delay: 1s; }
-    .node:nth-child(7) { top: 50%; left: 100%; animation-delay: 0.3s; }
-    .node:nth-child(8) { top: 50%; left: 0%; animation-delay: 0.7s; }
-    @keyframes nodeGlow { 0% { opacity: 0.4; transform: scale(0.8); } 100% { opacity: 1; transform: scale(1.2); } }
-    .ring-line {
-        position: absolute; top: -10px; left: -10px; width: calc(100% + 20px); height: calc(100% + 20px);
-        border-radius: 50%; border: 1px dashed rgba(0, 204, 136, 0.3);
-        box-shadow: 0 0 20px rgba(0, 204, 136, 0.1); z-index: 0;
-        animation: ringPulse 4s ease-in-out infinite;
-    }
-    .ring-line:nth-child(2) { top: 0px; left: 0px; width: 100%; height: 100%; border-color: rgba(0, 204, 136, 0.15); animation-delay: 2s; }
-    @keyframes ringPulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.8; } }
-    .hc-text {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        z-index: 10;
-        font-size: 3.5rem;
-        font-weight: 900;
-        letter-spacing: -4px;
-        font-family: 'Inter', sans-serif;
+    /* Video wrapper */
+    .video-wrapper {
         display: flex;
         flex-direction: column;
         align-items: center;
-        line-height: 0.9;
-        text-shadow: 0 0 20px rgba(0,68,170,0.5), 0 0 40px rgba(255,215,0,0.3);
-        filter: drop-shadow(0 0 10px rgba(255,215,0,0.2));
-        pointer-events: none;
+        justify-content: center;
+        padding: 10px 0;
     }
-    .hc-text .h-letter {
-        color: #0044aa;
-        font-size: 2.2rem;
-        text-shadow: 0 0 10px #0044aa, 0 0 30px #0066cc;
+    .video-wrapper video {
+        width: 100%;
+        max-width: 180px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.2);
     }
-    .hc-text .c-letter {
-        font-size: 2.2rem;
-        background: linear-gradient(135deg, #ffcc00, #d21034);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        text-shadow: none;
-        filter: drop-shadow(0 0 8px rgba(255,200,0,0.4));
-    }
-    .hc-text .h-letter { margin-bottom: -0.15em; }
-    .hc-text .c-letter:first-of-type { margin-top: -0.2em; }
+
+    /* Styling for the text below video, same as previous logo-text */
     .logo-text {
         font-size: 0.75rem;
         font-weight: 700;
@@ -503,6 +405,8 @@ st.markdown("""
     }
     @keyframes rippleText { 0% { transform: scaleY(1) skewX(0deg); } 50% { transform: scaleY(1.08) skewX(2deg); } 100% { transform: scaleY(1) skewX(0deg); } }
     @keyframes lightSweep { 0% { background-position: 0% 0%; } 100% { background-position: 200% 0%; } }
+
+    /* Compact audio player */
     .compact-audio {
         display: flex; align-items: center; gap: 8px; padding: 4px 12px;
         background: rgba(255,255,255,0.4); border-radius: 30px; margin: 4px 0 8px 0;
@@ -514,34 +418,17 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# ---------- Top Bar: Logo, Language, Menu, Voice Button, Owner Toggle ----------
+# ---------- Top Bar: Logo (replaced with video), Language, Menu, Voice Button, Owner Toggle ----------
 lang = st.session_state.lang
 
 col1, col2, col3 = st.columns([1, 2, 1])
 with col1:
     st.markdown("""
-    <div class="logo-container">
-        <div class="logo-emblem">
-            <div class="spin-container">
-                <div class="network-ring">
-                    <div class="node"></div><div class="node"></div>
-                    <div class="node"></div><div class="node"></div>
-                    <div class="node"></div><div class="node"></div>
-                    <div class="node"></div><div class="node"></div>
-                </div>
-                <div class="ring-line"></div>
-                <div class="ring-line"></div>
-                <div class="glint">✦</div>
-                <div class="glint">✦</div>
-                <div class="glint">✦</div>
-                <div class="glint">✦</div>
-            </div>
-            <div class="hc-text">
-                <span class="h-letter">H</span>
-                <span class="c-letter">C</span>
-                <span class="c-letter">C</span>
-            </div>
-        </div>
+    <div class="video-wrapper">
+        <video autoplay loop muted playsinline controls>
+            <source src="https://raw.githubusercontent.com/Deslandes1/Haiti-Culture-Connection/main/Amigo.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
         <div class="logo-text">HAITI CULTURE CONNECTION</div>
     </div>
     """, unsafe_allow_html=True)
@@ -640,7 +527,7 @@ if st.session_state.show_voice_player and st.session_state.voice_audio_base64:
     """
     st.markdown(audio_html, unsafe_allow_html=True)
 
-# ---------- Owner Panel ----------
+# ---------- Owner Panel (unchanged) ----------
 if st.session_state.show_owner_panel:
     with st.container():
         st.markdown('<div class="owner-panel">', unsafe_allow_html=True)
@@ -660,7 +547,7 @@ if st.session_state.show_owner_panel:
                 st.rerun()
             st.markdown("---")
 
-            # Logo upload
+            # Logo upload (still available)
             st.markdown(f"### {get_text('logo_upload_title', lang)}")
             st.markdown(f"<p style='font-size:0.9rem; color:#1a2b4c;'>{get_text('logo_upload_subtitle', lang)}</p>", unsafe_allow_html=True)
             logo_file = st.file_uploader("", type=["png", "jpg", "jpeg", "svg"], key="logo_uploader_top")
@@ -815,7 +702,7 @@ filter_cat = st.session_state.selected_section if st.session_state.selected_sect
 display_media_feed(category_filter=filter_cat, lang=lang)
 st.markdown("---")
 
-# ---------- Section render functions ----------
+# ---------- Section render functions (unchanged) ----------
 def render_section(section_key, title_key, content_func):
     if st.session_state.selected_section is None or st.session_state.selected_section == section_key:
         if st.session_state.selected_section == section_key:
