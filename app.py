@@ -317,7 +317,7 @@ def on_menu_change():
     }
     st.session_state.selected_section = menu_map.get(selected, None)
 
-# ---------- CSS (updated video styles, caption now red) ----------
+# ---------- CSS (updated video styles, video now larger) ----------
 st.markdown("""
     <style>
     .stApp { background: #e6f0ff !important; }
@@ -389,7 +389,7 @@ st.markdown("""
     }
     .video-wrapper video {
         width: 100%;
-        max-width: 180px;
+        max-width: 250px;   /* increased from 180px */
         border-radius: 12px;
         box-shadow: 0 4px 20px rgba(0,0,0,0.2);
     }
@@ -421,7 +421,7 @@ st.markdown("""
         margin-top: 10px;
         padding: 0 5px;
         line-height: 1.5;
-        max-width: 200px;
+        max-width: 250px;   /* match video width */
         word-wrap: break-word;
         font-weight: 500;
     }
@@ -442,10 +442,12 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# ---------- Top Bar: Logo (replaced with video) + caption (no duplicate line) ----------
+# ---------- Top Bar: Logo (replaced with video) + caption ----------
 lang = st.session_state.lang
 
-col1, col2, col3 = st.columns([1, 2, 1])
+# We'll use a slightly different column ratio to give more space to the video
+col1, col2, col3 = st.columns([1.2, 2, 1.2])   # increased left column weight
+
 with col1:
     st.markdown("""
     <div class="video-wrapper">
