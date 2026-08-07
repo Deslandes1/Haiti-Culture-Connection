@@ -317,7 +317,7 @@ def on_menu_change():
     }
     st.session_state.selected_section = menu_map.get(selected, None)
 
-# ---------- CSS (updated video styles, video now larger) ----------
+# ---------- CSS ----------
 st.markdown("""
     <style>
     .stApp { background: #e6f0ff !important; }
@@ -389,9 +389,25 @@ st.markdown("""
     }
     .video-wrapper video {
         width: 100%;
-        max-width: 250px;   /* increased from 180px */
+        max-width: 200px;
         border-radius: 12px;
         box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+
+    /* Citadelle image in center column */
+    .citadelle-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 10px 0;
+        height: 100%;
+    }
+    .citadelle-wrapper img {
+        max-width: 100%;
+        max-height: 140px;
+        border-radius: 10px;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+        object-fit: cover;
     }
 
     /* Styling for the text below video – title (red gradient) */
@@ -413,15 +429,15 @@ st.markdown("""
     @keyframes rippleText { 0% { transform: scaleY(1) skewX(0deg); } 50% { transform: scaleY(1.08) skewX(2deg); } 100% { transform: scaleY(1) skewX(0deg); } }
     @keyframes lightSweep { 0% { background-position: 0% 0%; } 100% { background-position: 200% 0%; } }
 
-    /* Video caption – now red, smaller, centered */
+    /* Video caption – red, smaller, centered */
     .video-caption {
         font-size: 0.7rem;
         text-align: center;
-        color: #d21034;   /* red */
+        color: #d21034;
         margin-top: 10px;
         padding: 0 5px;
         line-height: 1.5;
-        max-width: 250px;   /* match video width */
+        max-width: 200px;
         word-wrap: break-word;
         font-weight: 500;
     }
@@ -442,11 +458,11 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# ---------- Top Bar: Logo (replaced with video) + caption ----------
+# ---------- Top Bar: Logo (video), Citadelle (center), Language/Menu (right) ----------
 lang = st.session_state.lang
 
-# We'll use a slightly different column ratio to give more space to the video
-col1, col2, col3 = st.columns([1.2, 2, 1.2])   # increased left column weight
+# Three columns: left (video), center (Citadelle image), right (language + menu)
+col1, col2, col3 = st.columns([1.2, 1.5, 1.8])
 
 with col1:
     st.markdown("""
@@ -458,10 +474,16 @@ with col1:
         <div class="logo-text">HAITI CULTURE CONNECTION</div>
         <div class="video-caption">
     """, unsafe_allow_html=True)
-    # Insert the translated caption (without the first line)
     caption = get_text("video_caption", lang)
     st.markdown(caption, unsafe_allow_html=True)
     st.markdown("</div></div>", unsafe_allow_html=True)
+
+with col2:
+    st.markdown("""
+    <div class="citadelle-wrapper">
+        <img src="https://raw.githubusercontent.com/Deslandes1/Haiti-Culture-Connection/main/citadellll.png" alt="Citadelle Laferrière">
+    </div>
+    """, unsafe_allow_html=True)
 
 with col3:
     st.markdown('<div style="display:flex; justify-content:flex-end; align-items:center; gap:10px; padding-top:10px; flex-wrap:wrap;">', unsafe_allow_html=True)
@@ -557,7 +579,7 @@ if st.session_state.show_voice_player and st.session_state.voice_audio_base64:
     """
     st.markdown(audio_html, unsafe_allow_html=True)
 
-# ---------- Owner Panel (unchanged) ----------
+# ---------- Owner Panel ----------
 if st.session_state.show_owner_panel:
     with st.container():
         st.markdown('<div class="owner-panel">', unsafe_allow_html=True)
@@ -577,7 +599,7 @@ if st.session_state.show_owner_panel:
                 st.rerun()
             st.markdown("---")
 
-            # Logo upload (still available)
+            # Logo upload
             st.markdown(f"### {get_text('logo_upload_title', lang)}")
             st.markdown(f"<p style='font-size:0.9rem; color:#1a2b4c;'>{get_text('logo_upload_subtitle', lang)}</p>", unsafe_allow_html=True)
             logo_file = st.file_uploader("", type=["png", "jpg", "jpeg", "svg"], key="logo_uploader_top")
@@ -732,7 +754,7 @@ filter_cat = st.session_state.selected_section if st.session_state.selected_sect
 display_media_feed(category_filter=filter_cat, lang=lang)
 st.markdown("---")
 
-# ---------- Section render functions (unchanged) ----------
+# ---------- Section render functions ----------
 def render_section(section_key, title_key, content_func):
     if st.session_state.selected_section is None or st.session_state.selected_section == section_key:
         if st.session_state.selected_section == section_key:
